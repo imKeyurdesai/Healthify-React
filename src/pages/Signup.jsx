@@ -1,7 +1,56 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { Navigate } from "react-router-dom";
+import { setUser } from "../features/userSlice";
 
 function Signup() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const user = useSelector( state => state.user);
+
+  const submitForm = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_SERVER_URL + "/signup",
+        {
+          firstName: username,
+          emailId: email,
+          password: password,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      dispatch(setUser(res.data.body))
+    } catch (error) {
+      if (error.response) {
+        setError(error.response.data.message || "Signup failed.");
+      } else {
+        setError("An error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    useEffect(() => {
+      if (user.status) {
+        navigate("/");
+      }
+    }, [user,navigate]);
+
   return (
     <div>
       <section className="flex flex-col items-center justify-center my-5 mx-2 p-3">
@@ -18,14 +67,18 @@ function Signup() {
       <section className="flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-md w-96">
           <h1 className="text-2xl font-bold mb-6 text-center">Signup</h1>
-          <form>
-            <div className="mb-4">
+          <form onSubmit={submitForm}>
+            <div className="mb-2">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Username
               </label>
               <input
                 type="text"
+                autoComplete="username"
+                name="username"
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
+                required
                 className="border border-gray-300 rounded-lg py-2 px-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
@@ -35,20 +88,33 @@ function Signup() {
               </label>
               <input
                 type="email"
+                autoComplete="email"
+                name="email"
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
+                required
                 className="border border-gray-300 rounded-lg py-2 px-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
-            <div className="mb-6">
+            <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Password
               </label>
               <input
                 type="password"
+                autoComplete="new-password"
+                name="password"
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
+                required
                 className="border border-gray-300 rounded-lg py-2 px-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
+            {error && (
+              <div className="mb-3 px-2 py-1 rounded-xl bg-gray-200">
+                <section className="font-medium text-red-400">{error}</section>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <input
@@ -56,6 +122,7 @@ function Signup() {
                   type="checkbox"
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
+
                 <label
                   htmlFor="remember_me"
                   className="ml-2 block text-sm text-gray-900"
@@ -65,8 +132,12 @@ function Signup() {
               </div>
             </div>
             <div>
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                Signup
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                {loading ? "Signing up..." : "Sign up"}
               </button>
             </div>
           </form>

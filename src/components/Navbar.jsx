@@ -1,12 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Logo, Profile, Button } from "./index";
 import { List } from "../assets/index";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import axios from "axios";
+import { clearUser } from "../features/userSlice";
 
 function Navbar() {
   const [isLogin, setisLogin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch()
+  const user = useSelector(state => state.user)
+
+  const handleLogout = async () => {
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_SERVER_URL + "/logout",
+        {},
+        {
+          withCredentials: true,
+        }
+      )
+      console.log(res.data?.message || 'logout')
+      dispatch(clearUser())
+      navigate('/login')
+    } catch (error) {
+      console.error(error);
+    }
+}
+
+   useEffect(() => {
+      if (user.status) {
+        setisLogin(true);
+      }
+    }, [user, navigate]);
   return (
     <nav>
       <div className="w-full p-3 h-20 bg-blue-500 flex items-center">
@@ -67,13 +96,15 @@ function Navbar() {
             <Button
               label="Log out"
               className="text-red-400  text-xs sm:text-sm md:text-base px-2 py-1 md:px-4 md:py-2"
-              onClick={() => setisLogin((prev) => !prev)}
+              onClick={() => handleLogout()}
             />
           ) : (
             <Button
               label="Login / Signup"
               className="text-xs sm:text-sm md:text-base px-2 py-1 md:px-4 md:py-2"
-              onClick={() => setisLogin((prev) => !prev)}
+              onClick={() => {
+                navigate("/login");
+              }}
             />
           )}
         </div>
