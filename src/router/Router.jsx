@@ -9,6 +9,7 @@ import {
   Login,
   Signup,
 } from "../pages/index";
+import ProtectedRoute from "./ProtectedRoute";
 
 const Router = createBrowserRouter([
   {
@@ -21,19 +22,31 @@ const Router = createBrowserRouter([
       },
       {
         path: "/book-appointment",
-        element: <Book_Appointment />,
+        element: 
+        <ProtectedRoute>
+          <Book_Appointment />
+        </ProtectedRoute>,
       },
       {
         path: "/find-doctors",
-        element: <Find_Doctor />,
+        element: 
+        <ProtectedRoute>
+          <Find_Doctor />
+        </ProtectedRoute>,
       },
       {
         path: "/appointments",
-        element: <Appointment />,
+        element: 
+        <ProtectedRoute>
+          <Appointment />
+        </ProtectedRoute>,
       },
       {
         path: "/profile",
-        element: <Profile />,
+        element: 
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>,
       },
     ],
   },
