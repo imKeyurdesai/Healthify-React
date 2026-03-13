@@ -47,7 +47,7 @@ function Signup() {
 
     useEffect(() => {
       if (user.status) {
-        navigate("/");
+        navigate("/profile");
       }
     }, [user,navigate]);
 
