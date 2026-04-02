@@ -5,11 +5,11 @@ const userSlice = createSlice({
     initialState: {},
     reducers: {
         setUser: (state, action) => {
-            state.status = true;
+            state.isLoggedin = true;
             state.userdata = action.payload;
         },
         clearUser: (state) => {
-            state.status = false;
+            state.isLoggedin = false;
             state.userdata = {};
         }
     }

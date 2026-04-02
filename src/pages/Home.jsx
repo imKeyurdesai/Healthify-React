@@ -33,14 +33,14 @@ function Home() {
     },
   ];
   return (
-    <div className="relative overflow-hidden min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <div className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full bg-gradient-to-br from-blue-200/60 to-cyan-200/40 blur-3xl" />
-      <div className="pointer-events-none absolute top-1/2 -right-40 w-[34rem] h-[34rem] rounded-full bg-gradient-to-tr from-indigo-200/50 to-purple-200/40 blur-3xl" />
+    <div className="relative overflow-hidden min-h-screen bg-linear-to-br from-blue-50 via-white to-blue-100">
+      <div className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full bg-linear-to-br from-blue-200/60 to-cyan-200/40 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/2 -right-40 w-136 h-136 rounded-full bg-linear-to-tr from-indigo-200/50 to-purple-200/40 blur-3xl" />
 
       <section className="relative py-10 md:py-28">
         <div className="flex flex-col justify-center items-center mb-15 pb-6 border-b border-blue-100/70 backdrop-blur-sm">
           <h1 className="text-center font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-6xl">
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 bg-clip-text text-transparent drop-shadow-sm">
+            <span className="bg-linear-to-r from-blue-600 via-indigo-600 to-cyan-500 bg-clip-text text-transparent drop-shadow-sm">
               Welcome to Healthify
             </span>
           </h1>
@@ -54,10 +54,10 @@ function Home() {
               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
                 Your Health, Our{" "}
                 <span className="relative inline-block">
-                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                  <span className="bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
                     Priority.
                   </span>
-                  <span className="absolute -bottom-1 left-0 w-full h-2 bg-gradient-to-r from-blue-400/40 to-cyan-400/40 rounded-full blur-sm" />
+                  <span className="absolute -bottom-1 left-0 w-full h-2 bg-linear-to-r from-blue-400/40 to-cyan-400/40 rounded-full blur-sm" />
                 </span>
               </h2>
               <p className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto md:mx-0">
@@ -66,9 +66,9 @@ function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-center md:justify-start">
                 <NavLink to={"/book-appointment"}>
-                  <button className="relative overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-10 py-3 font-semibold text-white shadow-lg transition duration-300 hover:shadow-blue-500/40 focus:outline-none focus:ring-4 focus:ring-blue-300 cursor-pointer">
+                  <button className="relative overflow-hidden rounded-full bg-linear-to-r from-blue-600 to-cyan-500 px-10 py-3 font-semibold text-white shadow-lg transition duration-300 hover:shadow-blue-500/40 focus:outline-none focus:ring-4 focus:ring-blue-300 cursor-pointer">
                     <span className="relative z-10">Book an Appointment</span>
-                    <span className="absolute inset-0 translate-y-full group-hover:translate-y-0 bg-gradient-to-r from-cyan-500 to-blue-600 transition-transform duration-300" />
+                    <span className="absolute inset-0 translate-y-full group-hover:translate-y-0 bg-linear-to-r from-cyan-500 to-blue-600 transition-transform duration-300" />
                   </button>
                 </NavLink>
 
@@ -83,7 +83,7 @@ function Home() {
               </div>
             </div>
             <div className="md:w-1/2 relative">
-              <div className="absolute -inset-4 bg-gradient-to-tr from-blue-200/40 via-transparent to-cyan-200/40 rounded-3xl blur-xl" />
+              <div className="absolute -inset-4 bg-linear-to-tr from-blue-200/40 via-transparent to-cyan-200/40 rounded-3xl blur-xl" />
               <img
                 src="https://cdn.pixabay.com/photo/2020/11/03/15/31/doctor-5710150_1280.jpg"
                 alt="Doctor consulting with a patient"
@@ -99,7 +99,7 @@ function Home() {
         <Element name="common-issues">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12">
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Common Medical Issues
             </span>
           </h2>
@@ -109,7 +109,7 @@ function Home() {
                 key={issue.title}
                 className="group relative bg-white/80 backdrop-blur rounded-2xl shadow-md hover:shadow-xl px-6 pt-8 pb-6 flex flex-col items-center transition duration-300 border border-transparent hover:border-blue-200"
               >
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-50 via-white to-cyan-50 opacity-0 group-hover:opacity-100 transition" />
+                <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-blue-50 via-white to-cyan-50 opacity-0 group-hover:opacity-100 transition" />
                 <img
                   src={issue.img}
                   alt={issue.alt}
@@ -122,7 +122,7 @@ function Home() {
                 <p className="relative text-gray-500 text-center text-sm flex-1 md:text-base">
                   {issue.desc}
                 </p>
-                <button className="relative mt-5 w-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2 text-sm font-medium shadow hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400">
+                <button className="relative mt-5 w-full rounded-full bg-linear-to-r from-blue-500 to-cyan-500 text-white py-2 text-sm font-medium shadow hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400">
                   Consult Now
                 </button>
               </div>
@@ -139,11 +139,11 @@ function Home() {
       </section>
 
       <section className="py-20 md:py-28 relative">
-        <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-blue-100/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-1/3 bg-linear-to-b from-blue-100/40 to-transparent pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-14">
             Why Choose{" "}
-            <span className="bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
               Healthify
             </span>
             ?

@@ -41,7 +41,7 @@ function Login() {
   };
 
   useEffect(() => {
-    if (user.status) {
+    if (user.isLoggedin) {
       navigate("/");
     }
   }, [user, navigate]);

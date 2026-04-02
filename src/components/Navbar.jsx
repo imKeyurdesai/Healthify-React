@@ -7,12 +7,11 @@ import axios from "axios";
 import { clearUser } from "../features/userSlice";
 
 function Navbar() {
-  const [isLogin, setisLogin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch()
-  const user = useSelector(state => state.user)
+  const isLoggedin = useSelector(state => state.user.isLoggedin) || false;
 
   const handleLogout = async () => {
     try {
@@ -30,12 +29,6 @@ function Navbar() {
       console.error(error);
     }
 }
-
-   useEffect(() => {
-      if (user.status) {
-        setisLogin(true);
-      }
-    }, [user, navigate]);
   return (
     <nav>
       <div className="w-full p-3 h-20 bg-blue-500 flex items-center">
@@ -92,7 +85,7 @@ function Navbar() {
         </div>
 
         <div className="nav-profile-container flex-1 md:w-1/4 flex items-center justify-end md:justify-center">
-          {isLogin ? (
+          {isLoggedin ? (
             <Button
               label="Log out"
               className="text-red-400  text-xs sm:text-sm md:text-base px-2 py-1 md:px-4 md:py-2"

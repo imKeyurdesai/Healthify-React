@@ -6,7 +6,7 @@ import { Navigate } from "react-router-dom";
 import { setUser } from "../features/userSlice";
 
 function Signup() {
-  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -46,7 +46,7 @@ function Signup() {
   };
 
     useEffect(() => {
-      if (user.status) {
+      if (user.isLoggedin) {
         navigate("/profile");
       }
     }, [user,navigate]);
@@ -56,7 +56,7 @@ function Signup() {
       <section className="flex flex-col items-center justify-center my-5 mx-2 p-3">
         <h1 className="text-4xl font-bold mb-8 text-center">
           Welcome to{" "}
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">
+          <span className="bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">
             Healthify
           </span>
         </h1>
@@ -70,14 +70,14 @@ function Signup() {
           <form onSubmit={submitForm}>
             <div className="mb-2">
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Username
+                Firstname
               </label>
               <input
                 type="text"
                 autoComplete="username"
-                name="username"
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                name="firstname"
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Enter your firstname"
                 required
                 className="border border-gray-300 rounded-lg py-2 px-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
