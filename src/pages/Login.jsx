@@ -7,8 +7,11 @@ import { setUser } from "../features/userSlice";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  localStorage.setItem("role", role);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -21,16 +24,16 @@ function Login() {
 
     try {
       const res = await axios.post(
-        import.meta.env.VITE_SERVER_URL + "/login",
+        import.meta.env.VITE_SERVER_URL + `/${role}/login`,
         {
           emailId: email,
           password: password,
         },
         {
           withCredentials: true,
-        });
+        },
+      );
       dispatch(setUser(res.data.body));
-
     } catch (error) {
       setError(
         error.response.data.message || "Login failed. Please try again.",
@@ -65,6 +68,24 @@ function Login() {
           <form onSubmit={submitForm}>
             <div className="mb-4">
               {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+              <label
+                className="block text-sm font-medium text-gray-700"
+                htmlFor="role"
+              >
+                Role
+              </label>
+              <div className="mt-1 mb-3">
+                <select
+                  name="role"
+                  id="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="p-1 h-10 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="user">Patient</option>
+                  <option value="doctor">Doctor</option>
+                </select>
+              </div>
               <label
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="email"

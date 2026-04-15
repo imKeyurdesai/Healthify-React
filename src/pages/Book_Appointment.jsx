@@ -1,146 +1,265 @@
-import { useState, useEffect } from "react";
-import DOCTORS from "../features/doctors.js";
-import { useDispatch , useSelector} from "react-redux";
-import { bookAppointment } from "../features/appointmentSlice.js";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setDoctors } from "../features/doctorSlice.js";
+import { bookAppointment as bookAppointmentAction } from "../features/appointmentSlice.js";
+import axios from "axios";
 
 function Book_Appointment() {
   const dispatch = useDispatch();
-  const appointments = useSelector(state => state.appointments.appointments)
-  const languages = [...new Set(DOCTORS.flatMap((e) => e.languages))];
-  const specialty = [...new Set(DOCTORS.map((e) => e.specialty))];
-  const location = [...new Set(DOCTORS.map((e) => e.location))];
-  const [filtered, setFiltered] = useState(DOCTORS);
   const [filters, setFilters] = useState({
-    specialty: "",
-    location: "",
+    skill: "",
     language: "",
+    location: "",
   });
-  
-  
-  const handleBook = (id) => {
-    dispatch(bookAppointment({doctorId: id, booked: true}));
+
+  const doctors = useSelector((state) => state.doctors?.doctors ?? []);
+  const appointments = useSelector(
+    (state) => state.appointments?.appointments ?? [],
+  );
+
+  const handleBookAppointment = (doctorId) => {
+    if (!doctorId) return;
+    dispatch(bookAppointmentAction({ doctorId, booked: true }));
   };
 
-  const handleFilterChange = (type, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [type]: value,
-    }));
+  const getDoctors = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_SERVER_URL + "/getAllDoctors",
+        {
+          withCredentials: true,
+        },
+      );
+      dispatch(setDoctors(res.data.body));
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   useEffect(() => {
-    let filteredData = DOCTORS.filter((doc) => {
-      const matchSpecialty = filters.specialty
-        ? doc.specialty === filters.specialty
-        : true;
-      const matchLocation = filters.location
-        ? doc.location === filters.location
-        : true;
-      const matchLanguage = filters.language
-        ? doc.languages.includes(filters.language)
-        : true;
-      return matchSpecialty && matchLocation && matchLanguage;
+    getDoctors();
+  }, [dispatch]);
+
+  const formatList = (value) => {
+    if (Array.isArray(value)) {
+      return value.length ? value.join(", ") : "Not specified";
+    }
+    return value || "Not specified";
+  };
+
+  const toArray = (value) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string" && value.trim()) return [value.trim()];
+    return [];
+  };
+
+  const filterOptions = useMemo(() => {
+    const skillSet = new Set();
+    const languageSet = new Set();
+    const locationSet = new Set();
+
+    doctors.forEach((doctor) => {
+      toArray(doctor?.skills).forEach((skill) => skillSet.add(skill));
+      toArray(doctor?.languages || doctor?.language).forEach((language) =>
+        languageSet.add(language),
+      );
+      if (doctor?.location) {
+        locationSet.add(doctor.location);
+      }
     });
-    setFiltered(filteredData);
-  }, [filters]);
+
+    return {
+      skills: [...skillSet].sort((a, b) => a.localeCompare(b)),
+      languages: [...languageSet].sort((a, b) => a.localeCompare(b)),
+      locations: [...locationSet].sort((a, b) => a.localeCompare(b)),
+    };
+  }, [doctors]);
+
+  const filteredDoctors = useMemo(() => {
+    return doctors.filter((doctor) => {
+      const doctorSkills = toArray(doctor?.skills).map((item) =>
+        item.toLowerCase(),
+      );
+      const doctorLanguages = toArray(doctor?.languages).map((item) =>
+        item.toLowerCase(),
+      );
+      const doctorLocation = (doctor?.location || "").toLowerCase();
+
+      const skillMatch =
+        !filters.skill || doctorSkills.includes(filters.skill.toLowerCase());
+      const languageMatch =
+        !filters.language ||
+        doctorLanguages.includes(filters.language.toLowerCase());
+      const locationMatch =
+        !filters.location || doctorLocation === filters.location.toLowerCase();
+
+      return skillMatch && languageMatch && locationMatch;
+    });
+  }, [doctors, filters]);
+
+  const bookedDoctorIds = useMemo(() => {
+    return new Set(
+      appointments
+        .filter((appointment) => appointment?.booked && appointment?.doctorId)
+        .map((appointment) => appointment.doctorId),
+    );
+  }, [appointments]);
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      skill: "",
+      language: "",
+      location: "",
+    });
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
-      <h1 className="text-3xl font-bold text-center my-8 text-blue-700">
-        Book an Appointment
-      </h1>
-      <section className="sort-doctors flex flex-wrap justify-center gap-4 mb-8">
-        <select
-          name="specialty"
-          id="specialty"
-          value={filters.specialty}
-          onChange={(e) => handleFilterChange("specialty", e.target.value)}
-          className="border border-gray-300 rounded-md p-2 m-2 cursor-pointer shadow-sm focus:ring-2 focus:ring-blue-400"
-        >
-          <option value="">Select Specialty</option>
-          {specialty.map((ele) => (
-            <option key={ele} value={ele}>
-              {ele}
-            </option>
-          ))}
-        </select>
-        <select
-          name="location"
-          id="location"
-          value={filters.location}
-          onChange={(e) => handleFilterChange("location", e.target.value)}
-          className="border border-gray-300 rounded-md p-2 m-2 cursor-pointer shadow-sm focus:ring-2 focus:ring-blue-400"
-        >
-          <option value="">Select Location</option>
-          {location.map((ele) => (
-            <option key={ele} value={ele}>
-              {ele}
-            </option>
-          ))}
-        </select>
-        <select
-          name="language"
-          id="language"
-          value={filters.language}
-          onChange={(e) => handleFilterChange("language", e.target.value)}
-          className="border border-gray-300 rounded-md p-2 m-2 cursor-pointer shadow-sm focus:ring-2 focus:ring-blue-400"
-        >
-          <option value="">Select Language</option>
-          {languages.map((ele) => (
-            <option key={ele} value={ele}>
-              {ele}
-            </option>
-          ))}
-        </select>
-      </section>
-      <section className="my-10 p-6 bg-neutral-100 rounded-xl shadow">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {filtered.length === 0 && (
-            <div className="col-span-3 text-center text-gray-500">
-              No doctors found.
+    <section className="relative overflow-hidden bg-linear-to-br from-sky-50 via-white to-cyan-100 py-10">
+      <div className="pointer-events-none absolute -left-24 top-6 h-64 w-64 rounded-full bg-sky-200/50 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-6 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl" />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <header className="mb-8 rounded-2xl bg-white/80 p-5 shadow-sm ring-1 ring-sky-100 backdrop-blur-sm sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+                Book an Appointment
+              </h1>
+              <p className="mt-1 text-sm text-slate-600">
+                Filter doctors by specialty, language, and city.
+              </p>
             </div>
-          )}
-          {filtered.map((doctor, i) => (
-            <div
-              key={doctor.id || i}
-              className="rounded-2xl max-h-100 w-full border p-4 flex flex-col items-center bg-gray-50 shadow-md hover:shadow-lg transition-shadow"
+
+            <div className="text-sm font-medium text-sky-700">
+              {filteredDoctors.length} result
+              {filteredDoctors.length === 1 ? "" : "s"}
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <select
+              name="skill"
+              id="skill"
+              value={filters.skill}
+              onChange={(e) => handleFilterChange("skill", e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
             >
-              <div className="mb-4">
+              <option value="">All Specialties</option>
+              {filterOptions.skills.map((skill) => (
+                <option key={skill} value={skill}>
+                  {skill}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="language"
+              id="language"
+              value={filters.language}
+              onChange={(e) => handleFilterChange("language", e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+            >
+              <option value="">All Languages</option>
+              {filterOptions.languages.map((language) => (
+                <option key={language} value={language}>
+                  {language}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="location"
+              id="location"
+              value={filters.location}
+              onChange={(e) => handleFilterChange("location", e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200"
+            >
+              <option value="">All Locations</option>
+              {filterOptions.locations.map((location) => (
+                <option key={location} value={location}>
+                  {location}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              Reset Filters
+            </button>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          {filteredDoctors.map((doctor) => (
+            <article
+              key={doctor?._id}
+              className="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-sky-200"
+            >
+              <div className="flex items-start gap-4">
                 <img
-                  src={doctor.photo}
-                  alt={doctor.name || "Doctor"}
-                  className="w-24 h-24 rounded-full object-cover border-2 border-blue-300"
+                  src={
+                    doctor?.profileUrl ||
+                    "https://ui-avatars.com/api/?name=Doctor&background=e0f2fe&color=075985&size=256"
+                  }
+                  alt={doctor?.firstName || "Doctor"}
+                  className="h-20 w-20 shrink-0 rounded-full border-2 border-sky-200 object-cover"
                 />
+
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-lg font-bold text-slate-900">
+                    Dr. {doctor?.firstName || ""} {doctor?.lastName || ""}
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {formatList(doctor?.skills)}
+                  </p>
+                </div>
               </div>
-              <div className="text-center mb-4">
-                <h2 className="text-lg font-semibold text-blue-800 md:text-2xl">
-                  {doctor.name || "Doctor"}
-                </h2>
-                <h2 className="text-sm text-gray-600 md:text-lg">
-                  <span className="font-bold">Speciality :</span>{" "}
-                  {doctor.specialty || "Specialty"}
-                </h2>
-                <h2 className="text-sm text-gray-600 md:text-lg">
-                  <span className="font-bold">Location :</span>{" "}
-                  {doctor.location || "Location"}
-                </h2>
-                <h2 className="text-sm text-gray-600 md:text-lg">
-                  <span className="font-bold">Languages :</span>{" "}
-                  {doctor.languages.join(", ") || "Languages"}
-                </h2>
+
+              <div className="mt-4 space-y-2 text-sm text-slate-600">
+                <p>
+                  <span className="font-semibold text-slate-800">
+                    Location:
+                  </span>{" "}
+                  {doctor?.location || "Not specified"}
+                </p>
+                <p>
+                  <span className="font-semibold text-slate-800">
+                    Languages:
+                  </span>{" "}
+                  {formatList(doctor?.languages || doctor?.language)}
+                </p>
+                <p className="rounded-lg bg-slate-50 p-3 text-slate-700">
+                  {doctor?.about || "About details will be updated soon."}
+                </p>
               </div>
+
               <button
-                onClick={() => handleBook(doctor.id)}
-                className="w-30 bg-blue-600 text-white px-4 py-2 rounded-lg hover:scale-110 duration-200 transition-all cursor-pointer"
-                disabled={appointments.some(appointment => appointment.doctorId === doctor.id && appointment.booked)}
+                onClick={() => handleBookAppointment(doctor?._id)}
+                disabled={bookedDoctorIds.has(doctor?._id)}
+                className="mt-5 w-full rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
-                {appointments.some(appointment => appointment.doctorId === doctor.id && appointment.booked) ? "Booked" : "Book Now"}
+                {bookedDoctorIds.has(doctor?._id)
+                  ? "Already Booked"
+                  : "Book Appointment"}
               </button>
-            </div>
+            </article>
           ))}
         </div>
-      </section>
-    </div>
+
+        {filteredDoctors.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-sky-300 bg-white/70 p-8 text-center text-slate-600">
+            No doctors match your selected filters.
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
