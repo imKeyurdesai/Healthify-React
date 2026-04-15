@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setDoctors } from "../features/doctorSlice.js";
 import { bookAppointment as bookAppointmentAction } from "../features/appointmentSlice.js";
-import axios from "axios";
+import { loadInitialApppointments } from "../features/appointmentSlice.js";
 
 function Book_Appointment() {
   const dispatch = useDispatch();
@@ -11,15 +12,50 @@ function Book_Appointment() {
     language: "",
     location: "",
   });
+  const [selectedSlots, setSelectedSlots] = useState({});
 
   const doctors = useSelector((state) => state.doctors?.doctors ?? []);
   const appointments = useSelector(
     (state) => state.appointments?.appointments ?? [],
   );
+  const role = localStorage.getItem("role") || "user";
 
-  const handleBookAppointment = (doctorId) => {
-    if (!doctorId) return;
-    dispatch(bookAppointmentAction({ doctorId, booked: true }));
+  const [showDateTimePicker, setShowDateTimePicker] = useState(false);
+
+  const toggleDateTimePicker = (doctorId) => {
+    setShowDateTimePicker((prev) => (prev === doctorId ? false : doctorId));
+  };
+
+  const handleSetTime = (doctorId) => {
+    const selectedDateTime = new Date(selectedSlots[doctorId]?.dateTime);
+
+    const scheduledTime = selectedDateTime?.getTime();
+
+    if (Number.isNaN(scheduledTime)) {
+      return;
+    }
+
+    handleBookAppointment(doctorId, scheduledTime);
+  };
+
+  const handleBookAppointment = async (doctorId, scheduledTime) => {
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_SERVER_URL + "/user/appointment/create",
+        { doctorId, scheduledTime },
+        { withCredentials: true },
+      );
+      dispatch(
+        bookAppointmentAction({
+          appointmentId: res.data.body._id,
+          doctorId: res.data.body.doctorId,
+          status: res.data.body.status,
+        }),
+      );
+      setShowDateTimePicker(false);
+    } catch (error) {
+      console.error("Failed to book appointment:", error.message);
+    }
   };
 
   const getDoctors = async () => {
@@ -36,8 +72,25 @@ function Book_Appointment() {
     }
   };
 
+  const handleAppointments = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_SERVER_URL + `/${role}/appointment/view`,
+        {
+          withCredentials: true,
+        },
+      );
+
+      const appointments = res.data.body;
+      dispatch(loadInitialApppointments(appointments));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     getDoctors();
+    handleAppointments();
   }, [dispatch]);
 
   const formatList = (value) => {
@@ -100,7 +153,12 @@ function Book_Appointment() {
   const bookedDoctorIds = useMemo(() => {
     return new Set(
       appointments
-        .filter((appointment) => appointment?.booked && appointment?.doctorId)
+        .filter(
+          (appointment) =>
+            appointment?.doctorId &&
+            appointment?.status &&
+            String(appointment.status).toLowerCase() !== "cancelled",
+        )
         .map((appointment) => appointment.doctorId),
     );
   }, [appointments]);
@@ -241,7 +299,7 @@ function Book_Appointment() {
               </div>
 
               <button
-                onClick={() => handleBookAppointment(doctor?._id)}
+                onClick={() => toggleDateTimePicker(doctor._id)}
                 disabled={bookedDoctorIds.has(doctor?._id)}
                 className="mt-5 w-full rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
@@ -249,6 +307,43 @@ function Book_Appointment() {
                   ? "Already Booked"
                   : "Book Appointment"}
               </button>
+              {showDateTimePicker === doctor?._id && (
+                <div className="mt-4 rounded-lg border border-sky-100 bg-sky-50/60 p-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor={`dateTime-${doctor?._id}`}>
+                        Select DateTime
+                      </label>
+                      <input
+                        type="datetime-local"
+                        id={`dateTime-${doctor?._id}`}
+                        name={`dateTime-${doctor?._id}`}
+                        min={new Date(Date.now() + 1000 * 60 * 60 * 24)
+                          .toISOString()
+                          .slice(0, 16)}
+                        onChange={(e) => {
+                          setSelectedSlots((prev) => ({
+                            ...prev,
+                            [doctor?._id]: {
+                              ...prev[doctor?._id],
+                              dateTime: e.target.value,
+                            },
+                          }));
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSetTime(doctor?._id)}
+                    disabled={!selectedSlots[doctor?._id]?.dateTime}
+                    className="mt-3 w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  >
+                    Confirm Date & Time
+                  </button>
+                </div>
+              )}
             </article>
           ))}
         </div>

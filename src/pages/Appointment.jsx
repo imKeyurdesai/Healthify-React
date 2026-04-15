@@ -1,18 +1,75 @@
-import React from "react";
-import { useSelector , useDispatch } from "react-redux";
-import DOCTORS from "../features/doctors.js";
+import { useEffect } from "react";
+import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { setDoctors } from "../features/doctorSlice.js";
 import { cancelAppointment } from "../features/appointmentSlice.js";
+import { loadInitialApppointments } from "../features/appointmentSlice.js";
 
 function Appointment() {
-  const appointments = useSelector((state) => state.appointments.appointments);
-  const bookedAppointments = appointments.filter(
-    (appointment) => appointment.booked
+  const role = localStorage.getItem("role") || "user";
+  const appointments = useSelector(
+    (state) => state.appointments?.appointments ?? [],
   );
+  const bookedAppointments = appointments.filter(
+    (appointment) =>
+      appointment?.status &&
+      String(appointment.status).toLowerCase() !== "cancelled",
+  );
+
+  const doctors = useSelector((state) => state.doctors?.doctors ?? []);
 
   const dispatch = useDispatch();
   const getDoctorById = (doctorId) => {
-    return DOCTORS.find((doctor) => doctor.id === doctorId);
+    return doctors.find((doctor) => doctor._id === doctorId);
   };
+
+  const getDoctors = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_SERVER_URL + "/getAllDoctors",
+        {
+          withCredentials: true,
+        },
+      );
+      dispatch(setDoctors(res.data.body));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const getAppointments = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_SERVER_URL + `/${role}/appointment/view`,
+        {
+          withCredentials: true,
+        },
+      );
+
+      dispatch(loadInitialApppointments(res.data.body));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  // const handleCancel = async (appointmentId) => {
+  //   try {
+  //     await axios.delete(
+  //       import.meta.env.VITE_SERVER_URL + `/appointment/cancel/${appointmentId}`,
+  //       {
+  //         withCredentials: true,
+  //       },
+  //     );
+  //     dispatch(cancelAppointment({ appointmentId }));      
+  //   } catch (error) {
+  //     console.log(error.message);
+  //   }
+  // };
+
+  useEffect(() => {
+    getDoctors();
+    getAppointments();
+  }, [dispatch]);
 
   return (
     <div>
@@ -30,16 +87,16 @@ function Appointment() {
               >
                 <div className="flex items-center gap-4">
                   <img
-                    src={doctor?.photo}
-                    alt={doctor?.name}
+                    src={doctor?.profileUrl}
+                    alt={doctor?.firstName}
                     className="w-16 h-16 rounded-full object-cover"
                   />
                   <div className="flex-1">
                     <h2 className="font-bold text-lg text-gray-800">
-                      {doctor?.name}
+                      Dr. {doctor?.firstName} {doctor?.lastName}
                     </h2>
                     <p className="text-blue-600 font-medium">
-                      {doctor?.specialty}
+                      {doctor?.skills?.join(", ")}
                     </p>
                     <p className="text-gray-600">{doctor?.location}</p>
                     <p className="text-sm text-gray-500">
@@ -55,8 +112,15 @@ function Appointment() {
                     </p>
                     <div className="cancelbtn">
                       <button
-                      onClick={() => dispatch(cancelAppointment({appointmentId: appointment.appointmentId}))}
-                      className="mt-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
+                        onClick={() =>
+                          dispatch(
+                            cancelAppointment({
+                              appointmentId: appointment.appointmentId,
+                            }),
+                          )
+                        }
+                        className="mt-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+                      >
                         Cancel
                       </button>
                     </div>

@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react'
-import { Outlet } from 'react-router-dom'
-import {Navbar , Footer} from './components/index'
-import { useDispatch } from 'react-redux'
-import axios from 'axios'
-import { setUser, setAuthChecked } from "../src/features/userSlice";
+import React, { useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import { Navbar, Footer } from "./components/index";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { setUser, setAuthChecked } from "./features/userSlice";
 
 function App() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const role = localStorage.getItem("role") || "user";
 
   const handleLogin = async () => {
@@ -14,27 +14,27 @@ function App() {
       const res = await axios.get(
         import.meta.env.VITE_SERVER_URL + `/${role}/profile/view`,
         {
-          withCredentials: true
-        }
+          withCredentials: true,
+        },
       );
       dispatch(setUser(res.data.body));
     } catch (error) {
       console.log(error);
       dispatch(setAuthChecked());
     }
-  }
+  };
 
   useEffect(() => {
-    handleLogin()
-  }, [dispatch])
-  
+    handleLogin();
+  }, [dispatch]);
+
   return (
     <>
-        <Navbar />
-        <Outlet />
-        <Footer />
+      <Navbar />
+      <Outlet />
+      <Footer />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
