@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setDoctors } from "../features/doctorSlice.js";
@@ -58,7 +58,7 @@ function Book_Appointment() {
     }
   };
 
-  const getDoctors = async () => {
+  const getDoctors = useCallback(async () => {
     try {
       const res = await axios.get(
         import.meta.env.VITE_SERVER_URL + "/getAllDoctors",
@@ -70,9 +70,9 @@ function Book_Appointment() {
     } catch (error) {
       console.log(error.message);
     }
-  };
+  }, [dispatch]);
 
-  const handleAppointments = async () => {
+  const handleAppointments = useCallback(async () => {
     try {
       const res = await axios.get(
         import.meta.env.VITE_SERVER_URL + `/${role}/appointment/view`,
@@ -86,12 +86,12 @@ function Book_Appointment() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [dispatch, role]);
 
   useEffect(() => {
     getDoctors();
     handleAppointments();
-  }, [dispatch]);
+  }, [getDoctors, handleAppointments]);
 
   const formatList = (value) => {
     if (Array.isArray(value)) {

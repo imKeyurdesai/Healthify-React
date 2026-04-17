@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setDoctors } from "../features/doctorSlice.js";
@@ -23,7 +23,7 @@ function Appointment() {
     return doctors.find((doctor) => doctor._id === doctorId);
   };
 
-  const getDoctors = async () => {
+  const getDoctors = useCallback(async () => {
     try {
       const res = await axios.get(
         import.meta.env.VITE_SERVER_URL + "/getAllDoctors",
@@ -35,9 +35,9 @@ function Appointment() {
     } catch (error) {
       console.log(error.message);
     }
-  };
+  }, [dispatch]);
 
-  const getAppointments = async () => {
+  const getAppointments = useCallback(async () => {
     try {
       const res = await axios.get(
         import.meta.env.VITE_SERVER_URL + `/${role}/appointment/view`,
@@ -50,7 +50,7 @@ function Appointment() {
     } catch (error) {
       console.log(error.message);
     }
-  };
+  }, [dispatch, role]);
 
   // const handleCancel = async (appointmentId) => {
   //   try {
@@ -60,7 +60,7 @@ function Appointment() {
   //         withCredentials: true,
   //       },
   //     );
-  //     dispatch(cancelAppointment({ appointmentId }));      
+  //     dispatch(cancelAppointment({ appointmentId }));
   //   } catch (error) {
   //     console.log(error.message);
   //   }
@@ -69,7 +69,7 @@ function Appointment() {
   useEffect(() => {
     getDoctors();
     getAppointments();
-  }, [dispatch]);
+  }, [getAppointments, getDoctors]);
 
   return (
     <div>
