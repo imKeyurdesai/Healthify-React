@@ -1,4 +1,4 @@
-import List from "./list";
+import List from "./List";
 import acne from './acne.svg';
 import anxiety from './anxiety.svg';
 import depression from './depression.jpg';
