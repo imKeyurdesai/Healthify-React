@@ -5,7 +5,7 @@ const initialState = {
 }
 
 const normalizeAppointment = (appointment) => ({
-    appointmentId: appointment?.appointmentId || appointment?._id,
+    appointmentId: appointment?._id,
     doctorId: appointment?.doctorId?._id || appointment?.doctorId,
     status: appointment?.status
 });
@@ -20,14 +20,20 @@ const appointmentSlice = createSlice({
         },
         bookAppointment: (state, action) => {
             const normalizedAppointment = normalizeAppointment(action.payload);
-            const appointmentId = normalizedAppointment.appointmentId || nanoid();
+            const appointmentId = normalizedAppointment.appointmentId;
             const doctorId = normalizedAppointment.doctorId;
             const status = normalizedAppointment.status;
             state.appointments.push({ appointmentId: appointmentId, doctorId: doctorId, status: status });
         },
         cancelAppointment: (state, action) => {
-            const appointmentId = action.payload.appointmentId;
-            state.appointments = state.appointments.filter(appointment => appointment.appointmentId !== appointmentId);
+            const appointmentId = action.payload;
+            state.appointments = state.appointments.map((appointment) => {
+                if (appointment.appointmentId === appointmentId) {
+                    return { ...appointment, status: "cancelled" };
+                }
+                return appointment;
+            });
+
         }
     }
 })

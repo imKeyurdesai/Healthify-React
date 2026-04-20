@@ -10,11 +10,6 @@ function Appointment() {
   const appointments = useSelector(
     (state) => state.appointments?.appointments ?? [],
   );
-  const bookedAppointments = appointments.filter(
-    (appointment) =>
-      appointment?.status &&
-      String(appointment.status).toLowerCase() !== "cancelled",
-  );
 
   const doctors = useSelector((state) => state.doctors?.doctors ?? []);
 
@@ -52,24 +47,27 @@ function Appointment() {
     }
   }, [dispatch, role]);
 
-  // const handleCancel = async (appointmentId) => {
-  //   try {
-  //     await axios.delete(
-  //       import.meta.env.VITE_SERVER_URL + `/appointment/cancel/${appointmentId}`,
-  //       {
-  //         withCredentials: true,
-  //       },
-  //     );
-  //     dispatch(cancelAppointment({ appointmentId }));
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // };
+  const handleCancel = async (appointmentId) => {
+    try {
+      await axios.patch(
+        import.meta.env.VITE_SERVER_URL +
+          `/${role}/appointment/cancel/${appointmentId}`,
+          {},
+        {
+          withCredentials: true,
+        },
+      );
+      dispatch(cancelAppointment(appointmentId));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   useEffect(() => {
     getDoctors();
     getAppointments();
   }, [getAppointments, getDoctors]);
+  
 
   return (
     <div>
@@ -77,8 +75,8 @@ function Appointment() {
         Your Appointments
       </h1>
       <section className="h-[60vh] bg-gray-300 p-3 py-5 m-4 rounded-lg overflow-auto flex flex-col gap-y-2">
-        {bookedAppointments.length > 0 ? (
-          bookedAppointments.map((appointment) => {
+        {appointments.length > 0 ? (
+          appointments.map((appointment) => {
             const doctor = getDoctorById(appointment.doctorId);
             return (
               <div
@@ -105,24 +103,20 @@ function Appointment() {
                   </div>
                   <div className="text-right">
                     <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
-                      Booked
+                      {appointment.status}
                     </span>
                     <p className="text-sm text-gray-500 mt-1">
                       ID: {appointment.appointmentId}
                     </p>
                     <div className="cancelbtn">
-                      <button
-                        onClick={() =>
-                          dispatch(
-                            cancelAppointment({
-                              appointmentId: appointment.appointmentId,
-                            }),
-                          )
-                        }
-                        className="mt-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
-                      >
-                        Cancel
-                      </button>
+                      {appointment.status === 'pending' && (
+                        <button
+                          onClick={() => handleCancel(appointment.appointmentId)}
+                          className="mt-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+                        >
+                          Cancel
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
