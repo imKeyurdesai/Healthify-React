@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { Logo, Profile, Button } from "./index";
 import { List } from "../assets/index";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -10,8 +10,8 @@ function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
-  const dispatch = useDispatch()
-  const isLoggedin = useSelector(state => state.user.isLoggedin) || false;
+  const dispatch = useDispatch();
+  const isLoggedin = useSelector((state) => state.user.isLoggedin) || false;
 
   const handleLogout = async () => {
     try {
@@ -20,15 +20,15 @@ function Navbar() {
         {},
         {
           withCredentials: true,
-        }
-      )
-      console.log(res.data?.message || 'logout')
-      dispatch(clearUser())
-      navigate('/login')
+        },
+      );
+      console.log(res.data?.message || "logout");
+      dispatch(clearUser());
+      navigate("/login");
     } catch (error) {
       console.error(error);
     }
-}
+  };
   return (
     <nav>
       <div className="w-full p-3 h-20 bg-blue-500 flex items-center">
@@ -89,7 +89,10 @@ function Navbar() {
             <Button
               label="Log out"
               className="text-red-400  text-xs sm:text-sm md:text-base px-2 py-1 md:px-4 md:py-2"
-              onClick={() => handleLogout()}
+              onClick={() => {
+                handleLogout();
+                localStorage.removeItem("user");
+              }}
             />
           ) : (
             <Button

@@ -7,7 +7,9 @@ const initialState = {
 const normalizeAppointment = (appointment) => ({
     appointmentId: appointment?._id,
     doctorId: appointment?.doctorId?._id || appointment?.doctorId,
-    status: appointment?.status
+    status: appointment?.status,
+    doctor: appointment?.doctor || null,
+    patient: appointment?.patient || null,
 });
 
 const appointmentSlice = createSlice({
@@ -23,7 +25,7 @@ const appointmentSlice = createSlice({
             const appointmentId = normalizedAppointment.appointmentId;
             const doctorId = normalizedAppointment.doctorId;
             const status = normalizedAppointment.status;
-            state.appointments.push({ appointmentId: appointmentId, doctorId: doctorId, status: status });
+            state.appointments.push({ appointmentId: appointmentId, doctorId: doctorId, status: status, doctor: normalizedAppointment.doctor, patient: normalizedAppointment.patient });
         },
         cancelAppointment: (state, action) => {
             const appointmentId = action.payload;

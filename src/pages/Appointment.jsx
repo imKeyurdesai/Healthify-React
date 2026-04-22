@@ -18,24 +18,10 @@ function Appointment() {
     return doctors.find((doctor) => doctor._id === doctorId);
   };
 
-  const getDoctors = useCallback(async () => {
-    try {
-      const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + "/getAllDoctors",
-        {
-          withCredentials: true,
-        },
-      );
-      dispatch(setDoctors(res.data.body));
-    } catch (error) {
-      console.log(error.message);
-    }
-  }, [dispatch]);
-
   const getAppointments = useCallback(async () => {
     try {
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + `/${role}/appointment/view`,
+        import.meta.env.VITE_SERVER_URL + `/user/appointment/view`,
         {
           withCredentials: true,
         },
@@ -51,8 +37,8 @@ function Appointment() {
     try {
       await axios.patch(
         import.meta.env.VITE_SERVER_URL +
-          `/${role}/appointment/cancel/${appointmentId}`,
-          {},
+          `/user/appointment/cancel/${appointmentId}`,
+        {},
         {
           withCredentials: true,
         },
@@ -64,10 +50,8 @@ function Appointment() {
   };
 
   useEffect(() => {
-    getDoctors();
     getAppointments();
-  }, [getAppointments, getDoctors]);
-  
+  }, [getAppointments]);
 
   return (
     <div>
@@ -77,7 +61,7 @@ function Appointment() {
       <section className="h-[60vh] bg-gray-300 p-3 py-5 m-4 rounded-lg overflow-auto flex flex-col gap-y-2">
         {appointments.length > 0 ? (
           appointments.map((appointment) => {
-            const doctor = getDoctorById(appointment.doctorId);
+            const { doctor } = appointment;
             return (
               <div
                 key={appointment.appointmentId}
@@ -91,7 +75,7 @@ function Appointment() {
                   />
                   <div className="flex-1">
                     <h2 className="font-bold text-lg text-gray-800">
-                      Dr. {doctor?.firstName} {doctor?.lastName}
+                      Dr. {appointment?.doctor?.firstName} {doctor?.lastName}
                     </h2>
                     <p className="text-blue-600 font-medium">
                       {doctor?.skills?.join(", ")}
@@ -109,9 +93,11 @@ function Appointment() {
                       ID: {appointment.appointmentId}
                     </p>
                     <div className="cancelbtn">
-                      {appointment.status === 'pending' && (
+                      {appointment.status === "pending" && (
                         <button
-                          onClick={() => handleCancel(appointment.appointmentId)}
+                          onClick={() =>
+                            handleCancel(appointment.appointmentId)
+                          }
                           className="mt-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
                         >
                           Cancel

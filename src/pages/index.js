@@ -5,5 +5,6 @@ import Profile from './Profile'
 import Home from './Home'
 import Login from './Login'
 import Signup from './Signup'
+import DoctorAppointment from './DoctorAppointment'
 
-export { Appointment, Book_Appointment, Find_Doctor, Profile , Home , Login , Signup }
+export { Appointment, Book_Appointment, Find_Doctor, Profile, Home, Login, Signup, DoctorAppointment }
