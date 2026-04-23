@@ -1,60 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-
-const resolveAppointmentId = (appointment) => {
-  return appointment?._id || appointment?.appointmentId || "";
-};
-
-const resolveUser = (appointment) => {
-  const rawUser = appointment?.patientId;
-  if (!rawUser) {
-    return { firstName: "Patient", lastName: "", emailId: "", profileUrl: "" };
-  }
-
-  if (typeof rawUser === "string") {
-    return {
-      firstName: "Patient",
-      lastName: "",
-      emailId: "",
-      profileUrl: "",
-      _id: rawUser,
-    };
-  }
-
-  return {
-    _id: rawUser?._id || "",
-    firstName: rawUser?.firstName || "Patient",
-    lastName: rawUser?.lastName || "",
-    emailId: rawUser?.emailId || rawUser?.email || "",
-    profileUrl: rawUser?.profileUrl || "",
-  };
-};
-
-const resolveScheduledTime = (appointment) => {
-  return (
-    appointment?.scheduledTime ||
-    appointment?.time ||
-    appointment?.appointmentTime ||
-    null
-  );
-};
-
-const toDateTimeLocalValue = (value) => {
-  if (!value) return "";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "";
-
-  const offset = parsed.getTimezoneOffset() * 60000;
-  return new Date(parsed.getTime() - offset).toISOString().slice(0, 16);
-};
+import { loadInitialApppointments } from "../features/appointmentSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 function DoctorAppointment() {
-  const [appointments, setAppointments] = useState([]);
-  const [selectedSlots, setSelectedSlots] = useState({});
-  const [reviewForm, setReviewForm] = useState({});
-  const [actionLoading, setActionLoading] = useState({});
+  const dispatch = useDispatch();
+  const appointments = useSelector(
+    (state) => state.appointments?.appointments ?? [],
+  );
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [selectedSlots, setSelectedSlots] = useState({});
 
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
@@ -62,70 +20,55 @@ function DoctorAppointment() {
 
     try {
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + "/doctor/appointment/view",
+        import.meta.env.VITE_SERVER_URL + `/doctor/appointment/view`,
         {
           withCredentials: true,
         },
       );
 
-      const incomingAppointments = Array.isArray(res?.data?.body)
-        ? res.data.body
-        : [];
-      setAppointments(incomingAppointments);
-    } catch (apiError) {
-      setError(
-        apiError?.response?.data?.message ||
-          "Unable to load doctor appointments.",
-      );
+      dispatch(loadInitialApppointments(res.data.body));
+    } catch (error) {
+      console.log(error.message);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  const handleTimeSlots = useMemo(
+    () =>
+      appointments.map((appointment) => {
+        const time = new Date(appointment.appointedTime)
+          .toISOString()
+          .slice(0, 16);
+        setSelectedSlots((prev) => ({
+          ...prev,
+          [appointment.appointmentId]: {
+            dateTime: time,
+          },
+        }));
+      }),
+    [appointments],
+  );
+
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
 
-  const normalizedAppointments = useMemo(() => {
-    return appointments.map((appointment) => {
-      const appointmentId = appointment._id;
+  const handleReviewSubmit = async (appointmentId, status) => {
 
-      return {
-        appointmentId,
-        status: appointment?.status || "pending",
-        scheduledTime: resolveScheduledTime(appointment),
-      };
-    });
-  }, [appointments]);
+    const appointedTime = selectedSlots[appointmentId]?.dateTime;
 
-  const updateOneAppointment = (appointmentId, patch) => {
-    setAppointments((prev) =>
-      prev.map((appointment) => {
-        const currentId = resolveAppointmentId(appointment);
-        if (currentId !== appointmentId) {
-          return appointment;
-        }
-        return { ...appointment, ...patch };
-      }),
-    );
-  };
+    if (!appointedTime) {
+      setError("Please select a valid appointment time.");
+      return;
+    }
 
-  const withActionLoading = (appointmentId, value) => {
-    setActionLoading((prev) => ({ ...prev, [appointmentId]: value }));
-  };
-
-  const handleReviewSubmit = async (appointmentId) => {
-    const currentReview = reviewForm[appointmentId] || {};
-    const status = currentReview?.status || "reviewed";
-    // const appointedTime
-
-    withActionLoading(appointmentId, true);
     setError("");
 
     try {
       const payload = {
+        appointedTime,
         status,
-        // appointedTime
       };
 
       await axios.patch(
@@ -134,48 +77,10 @@ function DoctorAppointment() {
         payload,
         { withCredentials: true },
       );
-
-      updateOneAppointment(appointmentId, {
-        status,
-        review: note,
-        doctorReview: note,
-      });
     } catch (apiError) {
       setError(
         apiError?.response?.data?.message ||
           "Unable to save appointment review.",
-      );
-    } finally {
-      withActionLoading(appointmentId, false);
-    }
-  };
-
-  const handleReschedule = async (appointmentId) => {
-    const dateTimeValue = selectedSlots[appointmentId]?.dateTime;
-    const selectedDate = new Date(dateTimeValue);
-    const scheduledTime = selectedDate.getTime();
-
-    if (!dateTimeValue || Number.isNaN(scheduledTime)) {
-      setError("Please pick a valid reschedule date and time.");
-      return;
-    }
-
-    withActionLoading(appointmentId, true);
-    setError("");
-
-    try {
-      await axios.patch(
-        import.meta.env.VITE_SERVER_URL +
-          `/doctor/appointment/reschedule/${appointmentId}`,
-        { scheduledTime },
-        { withCredentials: true },
-      );
-
-      updateOneAppointment(appointmentId, { scheduledTime });
-    } catch (apiError) {
-      setError(
-        apiError?.response?.data?.message ||
-          "Unable to reschedule appointment.",
       );
     } finally {
       withActionLoading(appointmentId, false);
@@ -199,12 +104,10 @@ function DoctorAppointment() {
           <div className="text-center py-8 text-gray-600">
             Loading appointments...
           </div>
-        ) : normalizedAppointments.length > 0 ? (
-          normalizedAppointments.map((appointment) => {
-            const fullName = [
-              appointment.user.firstName,
-              appointment.user.lastName,
-            ]
+        ) : appointments.length > 0 ? (
+          appointments.map((appointment) => {
+            const { patient } = appointment;
+            const fullName = [patient.firstName, patient.lastName]
               .filter(Boolean)
               .join(" ")
               .trim();
@@ -213,11 +116,8 @@ function DoctorAppointment() {
               ? new Date(appointment.scheduledTime).toLocaleString()
               : "Not scheduled";
             const avatar =
-              appointment.user.profileUrl ||
+              patient.profileUrl ||
               `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=e0f2fe&color=075985&size=256`;
-            const isSubmitting = Boolean(
-              actionLoading[appointment.appointmentId],
-            );
 
             return (
               <article
@@ -236,7 +136,7 @@ function DoctorAppointment() {
                       {displayName}
                     </h2>
                     <p className="text-sm text-gray-600">
-                      {appointment.user.emailId || "Email not provided"}
+                      {patient.emailId || "Email not provided"}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
                       <span className="font-semibold text-gray-700">
@@ -256,20 +156,20 @@ function DoctorAppointment() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex gap-3 justify-start">
-                  <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
-                    <p className="text-sm font-semibold text-blue-900">
-                      Review/Reschedule Appointment
-                    </p>
-                    <div className="mt-2 space-y-2">
+                {appointment.status === "pending" && (
+                  <div className="mt-4 flex gap-3 justify-start">
+                    <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
+                      <p className="text-sm font-semibold text-blue-900">
+                        Review/Reschedule Appointment
+                      </p>
+                      <div className="mt-2 space-y-2">
                       <input
                         type="datetime-local"
                         min={new Date(Date.now() + 1000 * 60 * 30)
                           .toISOString()
                           .slice(0, 16)}
                         value={
-                          selectedSlots[appointment.appointmentId]?.dateTime ||
-                          toDateTimeLocalValue(appointment.scheduledTime)
+                          selectedSlots[appointment.appointmentId]?.dateTime
                         }
                         onChange={(e) =>
                           setSelectedSlots((prev) => ({
@@ -283,22 +183,32 @@ function DoctorAppointment() {
                       />
                       <button
                         type="button"
-                        // onClick={() => handleReviewSubmit(appointment.appointmentId)}
+                        onClick={() =>
+                          handleReviewSubmit(
+                            appointment.appointmentId,
+                            "accepted",
+                          )
+                        }
                         className="rounded bg-green-600 px-4 py-2 mx-3 text-sm font-medium text-white hover:bg-green-700"
                       >
                         Accept
                       </button>
-
                       <button
                         type="button"
-                        // onClick={() => handleReviewSubmit(appointment.appointmentId)}
+                        onClick={() =>
+                          handleReviewSubmit(
+                            appointment.appointmentId,
+                            "rejected",
+                          )
+                        }
                         className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
                       >
                         Reject
                       </button>
                     </div>
                   </div>
-                </div>
+                </div>)
+                }
               </article>
             );
           })

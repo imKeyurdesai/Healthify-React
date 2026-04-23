@@ -157,7 +157,7 @@ function Book_Appointment() {
           (appointment) =>
             appointment?.doctorId &&
             appointment?.status &&
-            String(appointment.status).toLowerCase() !== "cancelled",
+            String(appointment.status).toLowerCase() === "pending",
         )
         .map((appointment) => appointment.doctorId),
     );

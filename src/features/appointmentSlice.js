@@ -8,6 +8,7 @@ const normalizeAppointment = (appointment) => ({
     appointmentId: appointment?._id,
     doctorId: appointment?.doctorId?._id || appointment?.doctorId,
     status: appointment?.status,
+    appointedTime: appointment?.appointmentTime,
     doctor: appointment?.doctor || null,
     patient: appointment?.patient || null,
 });

@@ -14,9 +14,6 @@ function Appointment() {
   const doctors = useSelector((state) => state.doctors?.doctors ?? []);
 
   const dispatch = useDispatch();
-  const getDoctorById = (doctorId) => {
-    return doctors.find((doctor) => doctor._id === doctorId);
-  };
 
   const getAppointments = useCallback(async () => {
     try {
