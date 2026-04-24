@@ -32,9 +32,9 @@ function DoctorAppointment() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
-  const handleTimeSlots = useMemo(
+  useMemo(
     () =>
       appointments.map((appointment) => {
         const time = new Date(appointment.appointedTime)
@@ -55,7 +55,6 @@ function DoctorAppointment() {
   }, [fetchAppointments]);
 
   const handleReviewSubmit = async (appointmentId, status) => {
-
     const appointedTime = selectedSlots[appointmentId]?.dateTime;
 
     if (!appointedTime) {
@@ -82,8 +81,6 @@ function DoctorAppointment() {
         apiError?.response?.data?.message ||
           "Unable to save appointment review.",
       );
-    } finally {
-      withActionLoading(appointmentId, false);
     }
   };
 
@@ -112,13 +109,13 @@ function DoctorAppointment() {
               .join(" ")
               .trim();
             const displayName = fullName || "Patient";
-            const displayTime = appointment.scheduledTime
-              ? new Date(appointment.scheduledTime).toLocaleString()
-              : "Not scheduled";
+            const displayTime = new Date(
+              appointment.appointedTime,
+            ).toLocaleString("en-In");
+
             const avatar =
               patient.profileUrl ||
               `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=e0f2fe&color=075985&size=256`;
-
             return (
               <article
                 key={appointment.appointmentId}
@@ -163,52 +160,52 @@ function DoctorAppointment() {
                         Review/Reschedule Appointment
                       </p>
                       <div className="mt-2 space-y-2">
-                      <input
-                        type="datetime-local"
-                        min={new Date(Date.now() + 1000 * 60 * 30)
-                          .toISOString()
-                          .slice(0, 16)}
-                        value={
-                          selectedSlots[appointment.appointmentId]?.dateTime
-                        }
-                        onChange={(e) =>
-                          setSelectedSlots((prev) => ({
-                            ...prev,
-                            [appointment.appointmentId]: {
-                              dateTime: e.target.value,
-                            },
-                          }))
-                        }
-                        className="w-full rounded border border-amber-200 px-2 py-1.5 text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleReviewSubmit(
-                            appointment.appointmentId,
-                            "accepted",
-                          )
-                        }
-                        className="rounded bg-green-600 px-4 py-2 mx-3 text-sm font-medium text-white hover:bg-green-700"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleReviewSubmit(
-                            appointment.appointmentId,
-                            "rejected",
-                          )
-                        }
-                        className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                      >
-                        Reject
-                      </button>
+                        <input
+                          type="datetime-local"
+                          min={new Date(Date.now() + 1000 * 60 * 30)
+                            .toISOString()
+                            .slice(0, 16)}
+                          value={
+                            selectedSlots[appointment.appointmentId]?.dateTime
+                          }
+                          onChange={(e) =>
+                            setSelectedSlots((prev) => ({
+                              ...prev,
+                              [appointment.appointmentId]: {
+                                dateTime: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full rounded border border-amber-200 px-2 py-1.5 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleReviewSubmit(
+                              appointment.appointmentId,
+                              "accepted",
+                            )
+                          }
+                          className="rounded bg-green-600 px-4 py-2 mx-3 text-sm font-medium text-white hover:bg-green-700"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleReviewSubmit(
+                              appointment.appointmentId,
+                              "rejected",
+                            )
+                          }
+                          className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>)
-                }
+                )}
               </article>
             );
           })

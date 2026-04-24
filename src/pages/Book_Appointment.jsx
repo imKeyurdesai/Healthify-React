@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setDoctors } from "../features/doctorSlice.js";
 import { bookAppointment as bookAppointmentAction } from "../features/appointmentSlice.js";
 import { loadInitialApppointments } from "../features/appointmentSlice.js";
+import { Alert } from "../components/";
 
 function Book_Appointment() {
   const dispatch = useDispatch();
@@ -13,6 +14,7 @@ function Book_Appointment() {
     location: "",
   });
   const [selectedSlots, setSelectedSlots] = useState({});
+  const [alertData, setAlertData] = useState(null);
 
   const doctors = useSelector((state) => state.doctors?.doctors ?? []);
   const appointments = useSelector(
@@ -26,13 +28,32 @@ function Book_Appointment() {
     setShowDateTimePicker((prev) => (prev === doctorId ? false : doctorId));
   };
 
+  const showAlert = ({
+    type = "info",
+    title = "Notice",
+    message = "",
+    timeout = 4000,
+  }) => {
+    setAlertData({
+      id: Date.now(),
+      type,
+      title,
+      message,
+      timeout,
+    });
+  };
+
   const handleSetTime = (doctorId) => {
     const selectedDateTime = new Date(selectedSlots[doctorId]?.dateTime);
 
     const scheduledTime = selectedDateTime?.getTime();
 
     if (Number.isNaN(scheduledTime)) {
-      return;
+      return showAlert({
+        type: "error",
+        title: "Invalid Date & Time",
+        message: "Please select a valid date and time for your appointment.",
+      });
     }
 
     handleBookAppointment(doctorId, scheduledTime);
@@ -40,6 +61,7 @@ function Book_Appointment() {
 
   const handleBookAppointment = async (doctorId, scheduledTime) => {
     try {
+      setAlertData(null);
       const res = await axios.post(
         import.meta.env.VITE_SERVER_URL + "/user/appointment/create",
         { doctorId, scheduledTime },
@@ -52,9 +74,18 @@ function Book_Appointment() {
           status: res.data.body.status,
         }),
       );
+      showAlert({
+        type: "success",
+        title: "Booking Successful",
+        message: "Your appointment has been booked successfully.",
+      });
       setShowDateTimePicker(false);
     } catch (error) {
-      console.error("Failed to book appointment:", error.message);
+      showAlert({
+        type: "error",
+        title: "Booking Failed",
+        message: "Failed to book appointment. Please try again.",
+      });
     }
   };
 
@@ -68,7 +99,11 @@ function Book_Appointment() {
       );
       dispatch(setDoctors(res.data.body));
     } catch (error) {
-      console.log(error.message);
+      showAlert({
+        type: "error",
+        title: "Error Fetching Doctors",
+        message: "An error occurred while fetching doctors. Please try again.",
+      });
     }
   }, [dispatch]);
 
@@ -84,7 +119,12 @@ function Book_Appointment() {
       const appointments = res.data.body;
       dispatch(loadInitialApppointments(appointments));
     } catch (error) {
-      console.log(error);
+      showAlert({
+        type: "error",
+        title: "Error Fetching Appointments",
+        message:
+          "An error occurred while fetching appointments. Please try again.",
+      });
     }
   }, [dispatch, role]);
 
@@ -179,7 +219,18 @@ function Book_Appointment() {
     <section className="relative overflow-hidden bg-linear-to-br from-sky-50 via-white to-cyan-100 py-10">
       <div className="pointer-events-none absolute -left-24 top-6 h-64 w-64 rounded-full bg-sky-200/50 blur-3xl" />
       <div className="pointer-events-none absolute -right-24 bottom-6 h-72 w-72 rounded-full bg-cyan-200/50 blur-3xl" />
-
+      {
+        alertData && (
+          <div className="absolute top-4 left-1/2 z-50 w-full -translate-x-1/2 px-4 sm:w-auto">
+            <Alert
+              title={alertData.title}
+              message={alertData.message}
+              type={alertData.type}
+              timeout={6000}
+            />
+          </div>
+        )
+      }
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <header className="mb-8 rounded-2xl bg-white/80 p-5 shadow-sm ring-1 ring-sky-100 backdrop-blur-sm sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

@@ -1,19 +1,32 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { setDoctors } from "../features/doctorSlice.js";
 import { cancelAppointment } from "../features/appointmentSlice.js";
 import { loadInitialApppointments } from "../features/appointmentSlice.js";
+import { Alert } from "../components/";
 
 function Appointment() {
-  const role = localStorage.getItem("role") || "user";
   const appointments = useSelector(
     (state) => state.appointments?.appointments ?? [],
   );
 
-  const doctors = useSelector((state) => state.doctors?.doctors ?? []);
-
   const dispatch = useDispatch();
+  const [alertData, setAlertData] = useState(null);
+
+  const showAlert = ({
+    type = "info",
+    title = "Notice",
+    message = "",
+    timeout = 4000,
+  }) => {
+    setAlertData({
+      id: Date.now(),
+      type,
+      title,
+      message,
+      timeout,
+    });
+  };
 
   const getAppointments = useCallback(async () => {
     try {
@@ -26,9 +39,14 @@ function Appointment() {
 
       dispatch(loadInitialApppointments(res.data.body));
     } catch (error) {
-      console.log(error.message);
+      showAlert({
+        type: "error",
+        title: "Error Fetching Appointments",
+        message:
+          "An error occurred while fetching appointments. Please try again.",
+      });
     }
-  }, [dispatch, role]);
+  }, [dispatch]);
 
   const handleCancel = async (appointmentId) => {
     try {
@@ -40,9 +58,19 @@ function Appointment() {
           withCredentials: true,
         },
       );
+      showAlert({
+        type: "success",
+        title: "Appointment Canceled",
+        message: "Your appointment has been successfully canceled.",
+      });
       dispatch(cancelAppointment(appointmentId));
     } catch (error) {
-      console.log(error.message);
+      showAlert({
+        type: "error",
+        title: "Error Canceling Appointment",
+        message:
+          "An error occurred while canceling the appointment. Please try again.",
+      });
     }
   };
 
@@ -55,6 +83,17 @@ function Appointment() {
       <h1 className="text-3xl font-bold text-center my-8 text-blue-700">
         Your Appointments
       </h1>
+      {alertData && (
+        <div className="absolute top-12 left-1/2 z-50 w-full -translate-x-1/2 px-4 sm:w-auto">
+          <Alert
+            key={alertData.id}
+            title={alertData.title}
+            message={alertData.message}
+            type={alertData.type}
+            timeout={6000}
+          />
+        </div>
+      )}
       <section className="h-[60vh] bg-gray-300 p-3 py-5 m-4 rounded-lg overflow-auto flex flex-col gap-y-2">
         {appointments.length > 0 ? (
           appointments.map((appointment) => {

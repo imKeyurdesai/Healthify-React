@@ -5,5 +5,6 @@ import Button from './Button.jsx'
 import Footer from './Footer.jsx'
 import Card from './Card.jsx'
 import CountUp from './Count_up.jsx'
+import Alert from './Alert.jsx'
 
-export { Logo, Navbar, Profile, Button , Footer, Card, CountUp }
+export { Logo, Navbar, Profile, Button, Footer, Card, CountUp, Alert }

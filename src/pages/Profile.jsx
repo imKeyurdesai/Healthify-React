@@ -3,6 +3,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../features/userSlice";
 import { useNavigate } from "react-router-dom";
+import { Alert } from "../components/index";
 
 function Profile() {
   const dispatch = useDispatch();
@@ -12,7 +13,7 @@ function Profile() {
   const userRole = userdata.role || "user";
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [alertData, setAlertData] = useState(null);
   const [conformDoctorPopup, setConformDoctorPopup] = useState(false);
   const [passwords, setPasswords] = useState({
     oldPassword: "",
@@ -22,6 +23,7 @@ function Profile() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    mobileNumber: "",
     age: "",
     gender: "",
     profileUrl: "",
@@ -30,6 +32,8 @@ function Profile() {
     languages: "",
     about: "",
   });
+
+  const role = localStorage.getItem("role") || "user";
 
   const firstName = userdata.firstName?.trim() || "User";
   const email = userdata.emailId?.trim() || "Not available";
@@ -44,8 +48,23 @@ function Profile() {
     [userdata.firstName, userdata.lastName].filter(Boolean).join(" ").trim() ||
     firstName;
 
+  const showAlert = ({
+    type = "info",
+    title = "Notice",
+    message = "",
+    timeout = 4000,
+  }) => {
+    setAlertData({
+      id: Date.now(),
+      type,
+      title,
+      message,
+      timeout,
+    });
+  };
+
   const openEditor = () => {
-    setError("");
+    setAlertData(null);
     setFormData({
       firstName: userdata.firstName || "",
       lastName: userdata.lastName || "",
@@ -65,7 +84,7 @@ function Profile() {
   };
 
   const closeEditor = () => {
-    setError("");
+    setAlertData(null);
     setIsEditing(false);
   };
 
@@ -76,7 +95,7 @@ function Profile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setAlertData(null);
     setIsSaving(true);
 
     const payload = {};
@@ -102,6 +121,9 @@ function Profile() {
     }
 
     if (userRole === "doctor") {
+      if (formData.mobileNumber !== "") {
+        payload.mobileNumber = formData.mobileNumber.trim();
+      }
       if (formData.skills) {
         payload.skills = formData.skills
           .split(",")
@@ -124,7 +146,7 @@ function Profile() {
 
     try {
       const res = await axios.patch(
-        import.meta.env.VITE_SERVER_URL + `/${userRole}/profile/update`,
+        import.meta.env.VITE_SERVER_URL + `/${role}/profile/update`,
         payload,
         { withCredentials: true },
       );
@@ -132,32 +154,58 @@ function Profile() {
       const updatedUser = res.data?.body || { ...userdata, ...payload };
       dispatch(setUser(updatedUser));
       setIsEditing(false);
+      showAlert({
+        type: "success",
+        title: "Profile updated",
+        message: "Your profile changes were saved successfully.",
+      });
     } catch (apiError) {
-      setError(
-        apiError?.response?.data?.message || "Failed to update profile.",
-      );
+      showAlert({
+        type: "error",
+        title: "Update failed",
+        message:
+          apiError?.response?.data?.message || "Failed to update profile.",
+        timeout: 6000,
+      });
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleApplyDoctor = async () => {
-   try {
-    await axios.post(
-      import.meta.env.VITE_SERVER_URL + `/doctor/register`,
-      {
-        oldPassword: passwords.oldPassword,
-        newPassword: passwords.newPassword
-      },
-      { withCredentials: true },
-    );
-    navigate("/login");
-   } catch (error) {
-    setError(
-      error?.response?.data?.message || "Failed to apply for doctor role.",
-    );
-   }
-    
+    if (!passwords.oldPassword || !passwords.newPassword) {
+      showAlert({
+        type: "warning",
+        title: "Missing details",
+        message: "Please provide both old and new password.",
+      });
+      return;
+    }
+
+    try {
+      await axios.post(
+        import.meta.env.VITE_SERVER_URL + `/doctor/register`,
+        {
+          oldPassword: passwords.oldPassword,
+          newPassword: passwords.newPassword,
+        },
+        { withCredentials: true },
+      );
+      showAlert({
+        type: "success",
+        title: "Application submitted",
+        message: "Please log in again to continue.",
+      });
+      navigate("/login");
+    } catch (error) {
+      showAlert({
+        type: "error",
+        title: "Application failed",
+        message:
+          error?.response?.data?.message || "Failed to apply for doctor role.",
+        timeout: 6000,
+      });
+    }
   };
 
   const Patient_infoCards = [
@@ -191,6 +239,10 @@ function Profile() {
     {
       label: "Email Address",
       value: email,
+    },
+    {
+      label: "Mobile Number",
+      value: userdata.mobileNumber || "Not specified",
     },
     {
       label: "role",
@@ -244,6 +296,18 @@ function Profile() {
           </h1>
         </header>
 
+        {alertData && (
+          <Alert
+            key={alertData.id}
+            title={alertData.title}
+            message={alertData.message}
+            type={alertData.type}
+            timeout={alertData.timeout}
+            onClose={() => setAlertData(null)}
+            className="mb-6"
+          />
+        )}
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <article className="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-blue-100 sm:p-8">
             <div className="mx-auto mb-5 h-32 w-32 overflow-hidden rounded-full ring-4 ring-blue-100 sm:h-36 sm:w-36">
@@ -294,77 +358,82 @@ function Profile() {
           {conformDoctorPopup ? (
             <article className="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-blue-100 sm:p-8 lg:col-span-2">
               <form>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg border border-gray-200">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-3">
-            Confirm Doctor Application
-          </h2>
-          {error && (
-            <p className="text-sm text-red-500 mb-6">
-              {error}
-            </p>
-          )}
-          <p className="text-gray-600 mb-2">
-            Are you sure you want to apply for doctor?
-          </p>
-          <p className="text-sm text-red-500 mb-6">
-            Once you switch, there is no going back.
-          </p>
+                <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+                  <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg border border-gray-200">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-3">
+                      Confirm Doctor Application
+                    </h2>
+                    <p className="text-gray-600 mb-2">
+                      Are you sure you want to apply for doctor?
+                    </p>
+                    <p className="text-sm text-red-500 mb-6">
+                      Once you switch, there is no going back.
+                    </p>
 
-          <input type="text" autoComplete="username" hidden={true} />
+                    <input type="text" autoComplete="username" hidden={true} />
 
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="old-password"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Old password
-              </label>
-              <input
-                id="old-password"
-                type="password"
-                onChange={(e) => setPasswords({...passwords, oldPassword: e.target.value})}
-                autoComplete="current-password"
-                placeholder="Enter old password"
-                className="w-full rounded-md border border-gray-300 px-4 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="new-password"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                New password
-              </label>
-              <input
-                id="new-password"
-                type="password"
-                onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
-                autoComplete="new-password"
-                placeholder="Enter new password"
-                className="w-full rounded-md border border-gray-300 px-4 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              />
-            </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="old-password"
+                          className="mb-1 block text-sm font-medium text-gray-700"
+                        >
+                          Old password
+                        </label>
+                        <input
+                          id="old-password"
+                          type="password"
+                          onChange={(e) =>
+                            setPasswords({
+                              ...passwords,
+                              oldPassword: e.target.value,
+                            })
+                          }
+                          autoComplete="current-password"
+                          placeholder="Enter old password"
+                          className="w-full rounded-md border border-gray-300 px-4 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="new-password"
+                          className="mb-1 block text-sm font-medium text-gray-700"
+                        >
+                          New password
+                        </label>
+                        <input
+                          id="new-password"
+                          type="password"
+                          onChange={(e) =>
+                            setPasswords({
+                              ...passwords,
+                              newPassword: e.target.value,
+                            })
+                          }
+                          autoComplete="new-password"
+                          placeholder="Enter new password"
+                          className="w-full rounded-md border border-gray-300 px-4 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        />
+                      </div>
 
-            <button
-              type="button"
-              onClick={handleApplyDoctor}
-              className="w-full rounded-md bg-blue-500 px-4 py-2 font-medium text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Yes, I am sure
-            </button>
-            <button
-              type="button"
-              onClick={() => setConformDoctorPopup(false)}
-              className="w-full rounded-md bg-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
-            >
-              No, cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </form>
+                      <button
+                        type="button"
+                        onClick={handleApplyDoctor}
+                        className="w-full rounded-md bg-blue-500 px-4 py-2 font-medium text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        Yes, I am sure
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConformDoctorPopup(false)}
+                        className="w-full rounded-md bg-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                      >
+                        No, cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
             </article>
           ) : (
             <article className="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-blue-100 sm:p-8 lg:col-span-2">
@@ -400,12 +469,6 @@ function Profile() {
                   <h4 className="text-base font-semibold text-gray-800">
                     Edit Profile
                   </h4>
-
-                  {error && (
-                    <p className="rounded-md bg-red-100 px-3 py-2 text-sm text-red-700">
-                      {error}
-                    </p>
-                  )}
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
@@ -504,6 +567,24 @@ function Profile() {
 
                   {userRole === "doctor" && (
                     <>
+                      <div>
+                        <label
+                          htmlFor="mobileNumber"
+                          className="mb-1 block text-sm font-medium text-gray-700"
+                        >
+                          Mobile No.
+                        </label>
+                        <input
+                          id="mobileNumber"
+                          name="mobileNumber"
+                          type="number"
+                          min="1000000000"
+                          max="9999999999"
+                          value={formData.mobileNumber}
+                          onChange={handleChange}
+                          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        />
+                      </div>
                       <div>
                         <label
                           htmlFor="specialty"
