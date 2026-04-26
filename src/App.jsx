@@ -4,6 +4,7 @@ import { Navbar, Footer } from "./components/index";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { setUser, setAuthChecked } from "./features/userSlice";
+import { supabase } from "./utils/supabase";
 
 function App() {
   const dispatch = useDispatch();

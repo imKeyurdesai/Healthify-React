@@ -3,7 +3,8 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../features/userSlice";
 import { useNavigate } from "react-router-dom";
-import { Alert } from "../components/index";
+import { Alert, UploadImagePopUp } from "../components/index";
+import { supabase } from "../utils/supabase";
 
 function Profile() {
   const dispatch = useDispatch();
@@ -14,6 +15,8 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [alertData, setAlertData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [inputImageWidget, setInputImageWidget] = useState(false);
   const [conformDoctorPopup, setConformDoctorPopup] = useState(false);
   const [passwords, setPasswords] = useState({
     oldPassword: "",
@@ -91,6 +94,58 @@ function Profile() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImgUpload = async (file) => {
+    if (!file) {
+      return false;
+    }
+
+    setLoading(true);
+
+    try {
+      const fileExt = file.name?.split(".").pop() || "jpg";
+      const fileName = `${userdata._id || userdata.id || "user"}-${Date.now()}.${fileExt}`;
+      const filePath = `profiles/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+      setFormData((prev) => ({ ...prev, profileUrl: publicUrl }));
+      dispatch(
+        setUser({
+          ...userdata,
+          profileUrl: publicUrl,
+        }),
+      );
+
+      showAlert({
+        type: "success",
+        title: "Image uploaded",
+        message: "Profile image uploaded successfully.",
+      });
+
+      return true;
+    } catch (error) {
+      setAlertData({
+        type: "error",
+        title: "Upload failed",
+        message: error?.message || "Failed to upload image.",
+      });
+      setInputImageWidget(false);
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -181,6 +236,7 @@ function Profile() {
       });
       return;
     }
+    setLoading(true);
 
     try {
       await axios.post(
@@ -205,6 +261,8 @@ function Profile() {
           error?.response?.data?.message || "Failed to apply for doctor role.",
         timeout: 6000,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -286,6 +344,30 @@ function Profile() {
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-300/40 blur-3xl" />
       <div className="pointer-events-none absolute -right-24 top-1/3 h-80 w-80 rounded-full bg-cyan-300/40 blur-3xl" />
 
+      {loading && (
+        <div className="absolute inset-0 z-100 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+          <svg
+            className="animate-spin h-5 w-5 text-blue-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.046 1.138 5.824 3 7.933V17h4v-1.74z"
+            ></path>
+          </svg>
+        </div>
+      )}
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <header className="mb-8 rounded-2xl bg-white/75 p-6 shadow-md ring-1 ring-blue-100 backdrop-blur-sm sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-600">
@@ -565,6 +647,16 @@ function Profile() {
                     />
                   </div>
 
+                  <div>
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      onClick={() => setInputImageWidget(true)}
+                    >
+                      Upload image
+                    </button>
+                  </div>
+
                   {userRole === "doctor" && (
                     <>
                       <div>
@@ -688,6 +780,16 @@ function Profile() {
                 </p>
               </div>
             </article>
+          )}
+
+          {inputImageWidget && (
+            <UploadImagePopUp
+              formData={formData}
+              setFormData={setFormData}
+              photoUrl={photoUrl}
+              onClose={() => setInputImageWidget(false)}
+              handleImgUpload={handleImgUpload}
+            />
           )}
         </div>
       </div>

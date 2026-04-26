@@ -26,7 +26,7 @@ function Count_up() {
     }
   ];
   return (
-     <div className="bg-gradient-to-br from-white to-blue-50 py-16 md:py-24">
+     <div className="bg-linear-to-br from-white to-blue-50 py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {statsData.map((stat, index) => (
