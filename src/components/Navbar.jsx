@@ -8,6 +8,7 @@ import { clearUser } from "../features/userSlice";
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const role = localStorage.getItem("role") || "user";
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -40,26 +41,39 @@ function Navbar() {
 
         <div className="nav-list-container hidden md:flex md:w-1/2">
           <ul className="flex w-full gap-x-2 lg:gap-x-5 text-sm lg:text-lg text-white items-center justify-evenly p-3 px-5">
+            {role === "doctor" ? (
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  `cursor-pointer hover:text-neutral-300 whitespace-nowrap transition-colors ${
+                    isActive ? "text-yellow-300 " : ""
+                  }`
+                }
+              >
+                Home
+              </NavLink>
+            ) : 
             <NavLink
-              to="/book-appointment"
-              className={({ isActive }) =>
-                `cursor-pointer hover:text-neutral-300 whitespace-nowrap transition-colors ${
-                  isActive ? "text-yellow-300 " : ""
-                }`
-              }
-            >
-              Book an Appointment
-            </NavLink>
+                to="/book-appointment"
+                className={({ isActive }) =>
+                  `cursor-pointer hover:text-neutral-300 whitespace-nowrap transition-colors ${
+                    isActive ? "text-yellow-300 " : ""
+                  }`
+                }
+              >
+                Book an Appointment
+              </NavLink>
+            }
 
             <NavLink
-              to="/find-doctors"
+              to="/feed"
               className={({ isActive }) =>
                 `cursor-pointer hover:text-neutral-300 transition-colors ${
                   isActive ? "text-yellow-300 " : ""
                 }`
               }
             >
-              Find Doctors
+              Feed
             </NavLink>
             <NavLink
               to="/appointments"

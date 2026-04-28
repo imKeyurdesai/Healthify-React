@@ -5,10 +5,11 @@ import {
   Appointment,
   Book_Appointment,
   Profile,
-  Find_Doctor,
+  // Find_Doctor,
   Login,
   Signup,
   DoctorAppointment,
+  Feed
 } from "../pages/index";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -25,22 +26,14 @@ if (role === "doctor") {
           path: "",
           element: <Home />,
         },
-        // {
-        //   path: "/book-appointment",
-        //   element: (
-        //     <ProtectedRoute>
-        //       <Book_Appointment />
-        //     </ProtectedRoute>
-        //   ),
-        // },
-        // {
-        //   path: "/find-doctors",
-        //   element: (
-        //     <ProtectedRoute>
-        //       <Find_Doctor />
-        //     </ProtectedRoute>
-        //   ),
-        // },
+        {
+          path: "/feed",
+          element: (
+            <ProtectedRoute>
+              <Feed />
+            </ProtectedRoute>
+          ),
+        },
         {
           path: "/appointments",
           element: (
@@ -87,10 +80,10 @@ if (role === "doctor") {
           ),
         },
         {
-          path: "/find-doctors",
+          path: "/feed",
           element: (
             <ProtectedRoute>
-              <Find_Doctor />
+              <Feed />
             </ProtectedRoute>
           ),
         },

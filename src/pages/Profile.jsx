@@ -44,8 +44,7 @@ function Profile() {
   const gender = userdata.gender || "Not specified";
   const about = userdata.about?.trim() || "Not specified";
   const photoUrl =
-    userdata.profileUrl?.trim() ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName)}&background=2563eb&color=fff&size=256`;
+    userdata.profileUrl?.trim();
 
   const fullName =
     [userdata.firstName, userdata.lastName].filter(Boolean).join(" ").trim() ||
@@ -72,6 +71,7 @@ function Profile() {
       firstName: userdata.firstName || "",
       lastName: userdata.lastName || "",
       age: userdata.age || "",
+      mobileNumber: userdata.mobileNumber || "",
       gender: userdata.gender || "",
       profileUrl: userdata.profileUrl || "",
       skills: Array.isArray(userdata.skills)
