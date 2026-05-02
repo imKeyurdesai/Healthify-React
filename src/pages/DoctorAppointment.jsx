@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { loadInitialApppointments } from "../features/appointmentSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { bookAppointment } from "../features/appointmentSlice";
 
 function DoctorAppointment() {
   const dispatch = useDispatch();
@@ -47,7 +48,7 @@ function DoctorAppointment() {
           },
         }));
       }),
-    [appointments],
+    [appointments, handleReviewSubmit],
   );
 
   useEffect(() => {
@@ -70,12 +71,13 @@ function DoctorAppointment() {
         status,
       };
 
-      await axios.patch(
+      const res =await axios.patch(
         import.meta.env.VITE_SERVER_URL +
           `/doctor/appointment/review/${appointmentId}`,
         payload,
         { withCredentials: true },
       );
+      dispatch(bookAppointment(res.data.body));
     } catch (apiError) {
       setError(
         apiError?.response?.data?.message ||

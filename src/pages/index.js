@@ -6,5 +6,6 @@ import Login from './Login'
 import Signup from './Signup'
 import DoctorAppointment from './DoctorAppointment'
 import Feed from './Feed'
+import Notifications from './Notifications'
 
-export { Appointment, Book_Appointment, Profile, Home, Login, Signup, DoctorAppointment, Feed }
+export { Appointment, Book_Appointment, Profile, Home, Login, Signup, DoctorAppointment, Feed, Notifications }

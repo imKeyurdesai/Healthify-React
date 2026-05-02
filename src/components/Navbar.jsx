@@ -1,18 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Logo, Profile, Button } from "./index";
 import { List } from "../assets/index";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import { clearUser } from "../features/userSlice";
+import { Notification } from "./index";
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const role = localStorage.getItem("role") || "user";
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoggedin = useSelector((state) => state.user.isLoggedin) || false;
+  const notifications =
+    useSelector((state) => state.notifications.notifications) || [];
+
+  const getNotificationCount = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_SERVER_URL + "/user/notification/count/unread",
+        {
+          withCredentials: true,
+        },
+      );
+      setNotificationCount(res.data.body.unreadCount);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (role === "user") {
+      getNotificationCount();
+    }
+  }, [dispatch, notificationCount, role]);
 
   const handleLogout = async () => {
     try {
@@ -52,8 +76,8 @@ function Navbar() {
               >
                 Home
               </NavLink>
-            ) : 
-            <NavLink
+            ) : (
+              <NavLink
                 to="/book-appointment"
                 className={({ isActive }) =>
                   `cursor-pointer hover:text-neutral-300 whitespace-nowrap transition-colors ${
@@ -63,7 +87,7 @@ function Navbar() {
               >
                 Book an Appointment
               </NavLink>
-            }
+            )}
 
             <NavLink
               to="/feed"
@@ -98,7 +122,15 @@ function Navbar() {
           </ul>
         </div>
 
-        <div className="nav-profile-container flex-1 md:w-1/4 flex items-center justify-end md:justify-center">
+        <div className="nav-profile-container flex-1 md:w-1/4 gap-2 flex items-center justify-end md:justify-center">
+          {isLoggedin && role === "user" && (
+            <NavLink
+              to="/notifications"
+              className="mx-2 relative text-orange-300"
+            >
+              <Notification height={45} count={notificationCount} />
+            </NavLink>
+          )}
           {isLoggedin ? (
             <Button
               label="Log out"

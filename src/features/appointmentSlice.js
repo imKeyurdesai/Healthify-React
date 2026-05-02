@@ -6,7 +6,7 @@ const initialState = {
 
 const normalizeAppointment = (appointment) => ({
     appointmentId: appointment?._id,
-    doctorId: appointment?.doctorId?._id || appointment?.doctorId,
+    doctorId: appointment?.doctorId,
     status: appointment?.status,
     appointedTime: appointment?.appointmentTime,
     doctor: appointment?.doctor || null,

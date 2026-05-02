@@ -7,5 +7,6 @@ import Card from './Card.jsx'
 import CountUp from './Count_up.jsx'
 import Alert from './Alert.jsx'
 import UploadImagePopUp from './UploadImagePopUp.jsx'
+import Notification from './Notification.jsx'
 
-export { Logo, Navbar, Profile, Button, Footer, Card, CountUp, Alert, UploadImagePopUp }
+export { Logo, Navbar, Profile, Button, Footer, Card, CountUp, Alert, UploadImagePopUp, Notification }

@@ -5,11 +5,11 @@ import {
   Appointment,
   Book_Appointment,
   Profile,
-  // Find_Doctor,
   Login,
   Signup,
   DoctorAppointment,
-  Feed
+  Feed,
+  Notifications
 } from "../pages/index";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -100,6 +100,14 @@ if (role === "doctor") {
           element: (
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/notifications",
+          element: (
+            <ProtectedRoute>
+              <Notifications />
             </ProtectedRoute>
           ),
         },
