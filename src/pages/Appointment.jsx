@@ -43,7 +43,7 @@ function Appointment() {
         type: "error",
         title: "Error Fetching Appointments",
         message:
-          "An error occurred while fetching appointments. Please try again.",
+          "An error occurred while fetching appointments. Please try again." + error.message,
       });
     }
   }, [dispatch]);
@@ -69,7 +69,7 @@ function Appointment() {
         type: "error",
         title: "Error Canceling Appointment",
         message:
-          "An error occurred while canceling the appointment. Please try again.",
+          "An error occurred while canceling the appointment. Please try again." + error.message,
       });
     }
   };
@@ -103,7 +103,7 @@ function Appointment() {
                 key={appointment.appointmentId}
                 className="card p-4 bg-white rounded shadow-md border-l-4 border-blue-500"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
                   <img
                     src={doctor?.profileUrl}
                     alt={doctor?.firstName}
@@ -121,10 +121,10 @@ function Appointment() {
                       Languages: {doctor?.languages?.join(", ")}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+                  <div className="flex flex-col">
+                    <section className="mr-auto sm:mr-0 sm:ml-auto w-fit bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
                       {appointment.status}
-                    </span>
+                    </section>
                     <p className="text-sm text-gray-500 mt-1">
                       ID: {appointment.appointmentId}
                     </p>

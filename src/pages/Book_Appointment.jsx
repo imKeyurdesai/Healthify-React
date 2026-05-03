@@ -84,7 +84,7 @@ function Book_Appointment() {
       showAlert({
         type: "error",
         title: "Booking Failed",
-        message: "Failed to book appointment. Please try again.",
+        message: "Failed to book appointment. Please try again." + error.message,
       });
     }
   };
@@ -102,7 +102,7 @@ function Book_Appointment() {
       showAlert({
         type: "error",
         title: "Error Fetching Doctors",
-        message: "An error occurred while fetching doctors. Please try again.",
+        message: "An error occurred while fetching doctors. Please try again." + error.message,
       });
     }
   }, [dispatch]);
@@ -123,7 +123,7 @@ function Book_Appointment() {
         type: "error",
         title: "Error Fetching Appointments",
         message:
-          "An error occurred while fetching appointments. Please try again.",
+          "An error occurred while fetching appointments. Please try again." + error.message,
       });
     }
   }, [dispatch, role]);

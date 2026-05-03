@@ -15,8 +15,6 @@ function Navbar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoggedin = useSelector((state) => state.user.isLoggedin) || false;
-  const notifications =
-    useSelector((state) => state.notifications.notifications) || [];
 
   const getNotificationCount = async () => {
     try {

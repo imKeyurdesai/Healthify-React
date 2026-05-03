@@ -28,6 +28,15 @@ const appointmentSlice = createSlice({
             const status = normalizedAppointment.status;
             state.appointments.push({ appointmentId: appointmentId, doctorId: doctorId, status: status, doctor: normalizedAppointment.doctor, patient: normalizedAppointment.patient });
         },
+        editAppointment: (state, action) => {
+            const { appointmentId, status , appointedTime } = action.payload;
+            state.appointments = state.appointments.map((appointment) => {
+                if (appointment.appointmentId === appointmentId) {
+                    return { ...appointment, status, appointedTime };
+                }
+                return appointment;
+            });
+        },
         cancelAppointment: (state, action) => {
             const appointmentId = action.payload;
             state.appointments = state.appointments.map((appointment) => {
@@ -41,5 +50,5 @@ const appointmentSlice = createSlice({
     }
 })
 
-export const { bookAppointment, cancelAppointment, loadInitialApppointments } = appointmentSlice.actions;
+export const { bookAppointment, cancelAppointment, loadInitialApppointments, editAppointment } = appointmentSlice.actions;
 export default appointmentSlice.reducer;

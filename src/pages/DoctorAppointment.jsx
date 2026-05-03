@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { loadInitialApppointments } from "../features/appointmentSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { bookAppointment } from "../features/appointmentSlice";
+import { editAppointment } from "../features/appointmentSlice";
 
 function DoctorAppointment() {
   const dispatch = useDispatch();
@@ -35,26 +35,6 @@ function DoctorAppointment() {
     }
   }, [dispatch]);
 
-  useMemo(
-    () =>
-      appointments.map((appointment) => {
-        const time = new Date(appointment.appointedTime)
-          .toISOString()
-          .slice(0, 16);
-        setSelectedSlots((prev) => ({
-          ...prev,
-          [appointment.appointmentId]: {
-            dateTime: time,
-          },
-        }));
-      }),
-    [appointments, handleReviewSubmit],
-  );
-
-  useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
-
   const handleReviewSubmit = async (appointmentId, status) => {
     const appointedTime = selectedSlots[appointmentId]?.dateTime;
 
@@ -71,20 +51,39 @@ function DoctorAppointment() {
         status,
       };
 
-      const res =await axios.patch(
+      const res = await axios.patch(
         import.meta.env.VITE_SERVER_URL +
           `/doctor/appointment/review/${appointmentId}`,
         payload,
         { withCredentials: true },
       );
-      dispatch(bookAppointment(res.data.body));
+      dispatch(editAppointment({ appointmentId, ...payload }));
     } catch (apiError) {
       setError(
         apiError?.response?.data?.message ||
           "Unable to save appointment review.",
       );
     }
+    console.log("done");
   };
+
+  useEffect(() => {
+    appointments.map((appointment) => {
+      const time = new Date(appointment.appointedTime)
+        .toISOString()
+        .slice(0, 16);
+      setSelectedSlots((prev) => ({
+        ...prev,
+        [appointment.appointmentId]: {
+          dateTime: time,
+        },
+      }));
+    });
+  }, [appointments, dispatch]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   return (
     <div>
@@ -188,7 +187,7 @@ function DoctorAppointment() {
                               "accepted",
                             )
                           }
-                          className="rounded bg-green-600 px-4 py-2 mx-3 text-sm font-medium text-white hover:bg-green-700"
+                          className="rounded bg-green-600 px-4 py-2 mx-3 text-sm font-medium text-white hover:bg-green-700 cursor-pointer"
                         >
                           Accept
                         </button>
@@ -200,7 +199,7 @@ function DoctorAppointment() {
                               "rejected",
                             )
                           }
-                          className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                          className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 cursor-pointer"
                         >
                           Reject
                         </button>
