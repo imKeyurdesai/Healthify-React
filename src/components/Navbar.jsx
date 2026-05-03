@@ -177,12 +177,12 @@ function Navbar() {
             </li>
             <li className="cursor-pointer hover:bg-blue-700 px-4 py-3 border-b border-blue-500 transition-colors">
               <NavLink
-                to="/find-doctors"
+                to="/feed"
                 className={({ isActive }) =>
                   `${isActive ? "text-yellow-300 " : ""}`
                 }
               >
-                Find Doctors
+                Feed
               </NavLink>
             </li>
             <li className="cursor-pointer hover:bg-blue-700 px-4 py-3 border-b border-blue-500 transition-colors">
