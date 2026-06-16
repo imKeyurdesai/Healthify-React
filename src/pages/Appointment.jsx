@@ -128,7 +128,7 @@ function Appointment() {
                     <p className="text-sm text-gray-500 mt-1">
                       ID: {appointment.appointmentId}
                     </p>
-                    <div className="cancelbtn">
+                    <div className="cancelbtn text-right">
                       {appointment.status === "pending" && (
                         <button
                           onClick={() =>

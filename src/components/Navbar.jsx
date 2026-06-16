@@ -88,7 +88,7 @@ function Navbar() {
             )}
 
             <NavLink
-              to="/feed"
+              to="/feed/explore"
               className={({ isActive }) =>
                 `cursor-pointer hover:text-neutral-300 transition-colors ${
                   isActive ? "text-yellow-300 " : ""
@@ -175,7 +175,7 @@ function Navbar() {
             </li>
             <li className="cursor-pointer hover:bg-blue-700 px-4 py-3 border-b border-blue-500 transition-colors">
               <NavLink
-                to="/feed"
+                to="/feed/explore"
                 className={({ isActive }) =>
                   `${isActive ? "text-yellow-300 " : ""}`
                 }

@@ -27,7 +27,7 @@ if (role === "doctor") {
           element: <Home />,
         },
         {
-          path: "/feed",
+          path: "/feed/explore",
           element: (
             <ProtectedRoute>
               <Feed />
@@ -80,7 +80,7 @@ if (role === "doctor") {
           ),
         },
         {
-          path: "/feed",
+          path: "/feed/explore",
           element: (
             <ProtectedRoute>
               <Feed />

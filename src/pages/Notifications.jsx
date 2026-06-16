@@ -81,7 +81,7 @@ function Notifications() {
       }
 
       await axios.patch(
-        import.meta.env.VITE_SERVER_URL + "/user/notification/mark-read-all",
+        import.meta.env.VITE_SERVER_URL + "/user/notification/mark-all-read",
         {},
         {
           withCredentials: true,
