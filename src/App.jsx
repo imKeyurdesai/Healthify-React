@@ -7,12 +7,11 @@ import { setUser, setAuthChecked } from "./features/userSlice";
 
 function App() {
   const dispatch = useDispatch();
-  const role = localStorage.getItem("role") || "user";
 
   const handleLogin = useCallback(async () => {
     try {
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + `/${role}/profile/view`,
+        import.meta.env.VITE_SERVER_URL + `/profile/view`,
         {
           withCredentials: true,
         },
@@ -22,7 +21,7 @@ function App() {
       console.log(error);
       dispatch(setAuthChecked());
     }
-  }, [dispatch, role]);
+  }, [dispatch]);
 
   useEffect(() => {
     handleLogin();

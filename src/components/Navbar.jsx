@@ -10,31 +10,29 @@ import { Notification } from "./index";
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
-  const role = localStorage.getItem("role") || "user";
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoggedin = useSelector((state) => state.user.isLoggedin) || false;
+  const role = useSelector((state) => state.user.userdata.role);
 
   const getNotificationCount = async () => {
     try {
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + "/user/notification/count/unread",
+        import.meta.env.VITE_SERVER_URL + "/notification/count/unread",
         {
           withCredentials: true,
         },
       );
-      setNotificationCount(res.data.body.unreadCount);
+      setNotificationCount(Number(res.data.body.unreadCount));
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
   };
 
   useEffect(() => {
-    if (role === "user") {
-      getNotificationCount();
-    }
-  }, [dispatch, notificationCount, role]);
+    getNotificationCount();
+  }, [dispatch, notificationCount]);
 
   const handleLogout = async () => {
     try {
@@ -121,7 +119,7 @@ function Navbar() {
         </div>
 
         <div className="nav-profile-container flex-1 md:w-1/4 gap-2 flex items-center justify-end md:justify-center">
-          {isLoggedin && role === "user" && (
+          {isLoggedin && role === "patient" && (
             <NavLink
               to="/notifications"
               className="mx-2 relative text-orange-300"

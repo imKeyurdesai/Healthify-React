@@ -21,7 +21,7 @@ function DoctorAppointment() {
 
     try {
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + `/doctor/appointment/view`,
+        import.meta.env.VITE_SERVER_URL + `/appointment/view`,
         {
           withCredentials: true,
         },

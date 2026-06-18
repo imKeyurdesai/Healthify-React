@@ -20,7 +20,6 @@ function Book_Appointment() {
   const appointments = useSelector(
     (state) => state.appointments?.appointments ?? [],
   );
-  const role = localStorage.getItem("role") || "user";
 
   const [showDateTimePicker, setShowDateTimePicker] = useState(false);
 
@@ -63,7 +62,7 @@ function Book_Appointment() {
     try {
       setAlertData(null);
       const res = await axios.post(
-        import.meta.env.VITE_SERVER_URL + "/user/appointment/create",
+        import.meta.env.VITE_SERVER_URL + "/appointment/create",
         { doctorId, scheduledTime },
         { withCredentials: true },
       );
@@ -110,7 +109,7 @@ function Book_Appointment() {
   const handleAppointments = useCallback(async () => {
     try {
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + `/${role}/appointment/view`,
+        import.meta.env.VITE_SERVER_URL + `/appointment/view`,
         {
           withCredentials: true,
         },
@@ -126,7 +125,7 @@ function Book_Appointment() {
           "An error occurred while fetching appointments. Please try again." + error.message,
       });
     }
-  }, [dispatch, role]);
+  }, [dispatch]);
 
   useEffect(() => {
     getDoctors();

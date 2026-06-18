@@ -11,7 +11,7 @@ function Profile() {
   const navigate = useNavigate();
 
   const userdata = useSelector((state) => state.user.userdata) || {};
-  const userRole = userdata.role || "user";
+  const userRole = userdata.role || "patient";
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [alertData, setAlertData] = useState(null);
@@ -201,7 +201,7 @@ function Profile() {
 
     try {
       const res = await axios.patch(
-        import.meta.env.VITE_SERVER_URL + `/${role}/profile/update`,
+        import.meta.env.VITE_SERVER_URL + `/profile/update`,
         payload,
         { withCredentials: true },
       );

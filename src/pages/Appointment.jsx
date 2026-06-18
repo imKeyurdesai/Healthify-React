@@ -31,7 +31,7 @@ function Appointment() {
   const getAppointments = useCallback(async () => {
     try {
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + `/user/appointment/view`,
+        import.meta.env.VITE_SERVER_URL + `/appointment/view`,
         {
           withCredentials: true,
         },
@@ -43,7 +43,8 @@ function Appointment() {
         type: "error",
         title: "Error Fetching Appointments",
         message:
-          "An error occurred while fetching appointments. Please try again." + error.message,
+          "An error occurred while fetching appointments. Please try again." +
+          error.message,
       });
     }
   }, [dispatch]);
@@ -69,7 +70,8 @@ function Appointment() {
         type: "error",
         title: "Error Canceling Appointment",
         message:
-          "An error occurred while canceling the appointment. Please try again." + error.message,
+          "An error occurred while canceling the appointment. Please try again." +
+          error.message,
       });
     }
   };
@@ -122,9 +124,25 @@ function Appointment() {
                     </p>
                   </div>
                   <div className="flex flex-col">
-                    <section className="mr-auto sm:mr-0 sm:ml-auto w-fit bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
-                      {appointment.status}
-                    </section>
+                    {appointment.status === "accepted" && (
+                      <section className="mr-auto sm:mr-0 sm:ml-auto w-fit bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+                        {appointment.status}
+                      </section>
+                    )}
+
+                    {appointment.status === "pending" && (
+                      <section className="mr-auto sm:mr-0 sm:ml-auto w-fit bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
+                        {appointment.status}
+                      </section>
+                    )}
+
+                    {(appointment.status === "rejected" ||
+                      appointment.status === "cancelled" ||
+                      appointment.status === "expired") && (
+                      <section className="mr-auto sm:mr-0 sm:ml-auto w-fit bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
+                        {appointment.status}
+                      </section>
+                    )}
                     <p className="text-sm text-gray-500 mt-1">
                       ID: {appointment.appointmentId}
                     </p>

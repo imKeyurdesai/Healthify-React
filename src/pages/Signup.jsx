@@ -23,7 +23,7 @@ function Signup() {
 
     try {
       const res = await axios.post(
-        import.meta.env.VITE_SERVER_URL + "/user/signup",
+        import.meta.env.VITE_SERVER_URL + "/signup",
         {
           firstName: firstName,
           emailId: email,

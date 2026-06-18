@@ -7,11 +7,9 @@ import { setUser } from "../features/userSlice";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState("patient");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  localStorage.setItem("role", role);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -24,10 +22,11 @@ function Login() {
 
     try {
       const res = await axios.post(
-        import.meta.env.VITE_SERVER_URL + `/${role}/login`,
+        import.meta.env.VITE_SERVER_URL + `/login`,
         {
           emailId: email,
           password: password,
+          role: role,
         },
         {
           withCredentials: true,
@@ -82,7 +81,7 @@ function Login() {
                   onChange={(e) => setRole(e.target.value)}
                   className="p-1 h-10 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
-                  <option value="user">Patient</option>
+                  <option value="patient">Patient</option>
                   <option value="doctor">Doctor</option>
                 </select>
               </div>

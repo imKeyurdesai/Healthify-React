@@ -5,6 +5,7 @@ import {
   markAllRead,
   clearNotifications,
   addNotification,
+  deleteNotification
 } from "../features/notificationSlice";
 import axios from "axios";
 import { Alert } from "../components";
@@ -32,7 +33,7 @@ function Notifications() {
   const fetchNotifications = async () => {
     try {
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_URL + "/user/notification/view",
+        import.meta.env.VITE_SERVER_URL + "/notification/view",
         {
           withCredentials: true,
         },
@@ -51,7 +52,7 @@ function Notifications() {
   const handleMark = async (id) => {
     try {
       await axios.patch(
-        import.meta.env.VITE_SERVER_URL + `/user/notification/mark-read/${id}`,
+        import.meta.env.VITE_SERVER_URL + `/notification/mark-read/${id}`,
         {},
         {
           withCredentials: true,
@@ -81,7 +82,7 @@ function Notifications() {
       }
 
       await axios.patch(
-        import.meta.env.VITE_SERVER_URL + "/user/notification/mark-all-read",
+        import.meta.env.VITE_SERVER_URL + "/notification/mark-all-read",
         {},
         {
           withCredentials: true,
@@ -98,6 +99,30 @@ function Notifications() {
         type: "error",
         title: "Error",
         message: error.message || "Failed to mark all notifications as read.",
+        timeout: 4000,
+      });
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(
+        import.meta.env.VITE_SERVER_URL + `/notification/delete/${id}`,
+        {
+          withCredentials: true,
+        },
+      );
+      deleteNotification(id);
+      showAlert({
+        type: "success",
+        title: "Deleted",
+        message: "Notification deleted successfully.",
+      });
+    } catch (error) {
+      showAlert({
+        type: "error",
+        title: "Error",
+        message: "Failed to delete notification." + error.message,
         timeout: 4000,
       });
     }
@@ -155,13 +180,21 @@ function Notifications() {
                   )}
                 </div>
                 <div className="ml-4 flex flex-col gap-2">
-                  {!n.isRead && (
+                  {!n.isRead ? (
                     <button
                       onClick={() => handleMark(n.notificationId)}
                       className="px-2 py-1 text-sm bg-green-500 text-white rounded cursor-pointer"
                     >
                       Mark read
                     </button>
+                  ):
+                  (
+                    <button
+                    onClick={() =>
+                      handleDelete(n.notificationId)
+                    }
+                    className="px-2 py-1 text-sm bg-red-500 text-white rounded cursor-pointer"
+                  >Delete</button>
                   )}
                 </div>
               </div>
