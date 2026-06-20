@@ -4,7 +4,7 @@ import {
   markAsRead,
   markAllRead,
   clearNotifications,
-  addNotification,
+  addNotifications,
   deleteNotification
 } from "../features/notificationSlice";
 import axios from "axios";
@@ -38,7 +38,7 @@ function Notifications() {
           withCredentials: true,
         },
       );
-      dispatch(addNotification(res.data.body));
+      dispatch(addNotifications(res.data.body));
     } catch (error) {
       showAlert({
         type: "error",

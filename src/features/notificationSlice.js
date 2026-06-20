@@ -16,10 +16,9 @@ const notificationSlice = createSlice({
     name: "notification",
     initialState,
     reducers: {
-        addNotification: (state, action) => {
+        addNotifications: (state, action) => {
             const notifications = Array.isArray(action.payload) ? action.payload : [action.payload];
-            const normalizedNotification = notifications.map((notification) => normalizeNotification(notification));
-            state.notifications.push(...normalizedNotification);
+            state.notifications = notifications
         },
         clearNotifications: (state) => {
             state.notifications = [];
@@ -38,5 +37,5 @@ const notificationSlice = createSlice({
     }
 });
 
-export const { addNotification, clearNotifications, markAsRead, markAllRead, deleteNotification } = notificationSlice.actions;
+export const { addNotifications, clearNotifications, markAsRead, markAllRead, deleteNotification } = notificationSlice.actions;
 export default notificationSlice.reducer;

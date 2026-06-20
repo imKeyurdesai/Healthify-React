@@ -18,7 +18,6 @@ function App() {
       );
       dispatch(setUser(res.data.body));
     } catch (error) {
-      console.log(error);
       dispatch(setAuthChecked());
     }
   }, [dispatch]);

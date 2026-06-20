@@ -26,7 +26,6 @@ function Navbar() {
       );
       setNotificationCount(Number(res.data.body.unreadCount));
     } catch (error) {
-      console.error("Error fetching notifications:", error);
     }
   };
 
@@ -43,7 +42,6 @@ function Navbar() {
           withCredentials: true,
         },
       );
-      console.log(res.data?.message || "logout");
       dispatch(clearUser());
       navigate("/login");
     } catch (error) {
@@ -95,7 +93,17 @@ function Navbar() {
             >
               Feed
             </NavLink>
-            <NavLink
+            {role === 'doctor' ? (<NavLink
+              to="/appointments"
+              className={({ isActive }) =>
+                `cursor-pointer hover:text-neutral-300 transition-colors ${
+                  isActive ? "text-yellow-300 " : ""
+                }`
+              }
+            >
+              Appointments
+            </NavLink>): (
+              <NavLink
               to="/appointments"
               className={({ isActive }) =>
                 `cursor-pointer hover:text-neutral-300 transition-colors ${
@@ -105,6 +113,7 @@ function Navbar() {
             >
               Appointments
             </NavLink>
+            )}
             <NavLink
               to="/profile"
               className={({ isActive }) =>

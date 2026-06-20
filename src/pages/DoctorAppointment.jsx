@@ -29,7 +29,6 @@ function DoctorAppointment() {
 
       dispatch(loadInitialApppointments(res.data.body));
     } catch (error) {
-      console.log(error.message);
     } finally {
       setLoading(false);
     }
@@ -64,7 +63,6 @@ function DoctorAppointment() {
           "Unable to save appointment review.",
       );
     }
-    console.log("done");
   };
 
   useEffect(() => {
@@ -167,7 +165,8 @@ function DoctorAppointment() {
                             .toISOString()
                             .slice(0, 16)}
                           value={
-                            selectedSlots[appointment.appointmentId]?.dateTime
+                            selectedSlots[appointment.appointmentId]
+                              ?.dateTime ?? ""
                           }
                           onChange={(e) =>
                             setSelectedSlots((prev) => ({
