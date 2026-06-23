@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useMemo } from "react";
 import App from "../App";
 import {
   Home,
@@ -62,7 +63,8 @@ function buildRoutes(role) {
         element: <Signup />,
       },
     );
-  } else {
+  }
+  if (role === "patient") {
     AccesibleRoutes.push(
       {
         path: "/",
@@ -130,6 +132,6 @@ function buildRoutes(role) {
 
 export function AppRouter() {
   const role = useSelector((state) => state.user?.userdata?.role || "patient");
-  const router = buildRoutes(role);
+  const router = useMemo(() => buildRoutes(role), [role]);
   return <RouterProvider router={router} />;
 }

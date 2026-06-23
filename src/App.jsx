@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import { Navbar, Footer } from "./components/index";
 import { useDispatch } from "react-redux";
 import axios from "axios";
-import { setUser, setAuthChecked } from "./features/userSlice";
+import { setUser, clearUser } from "./features/userSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -17,8 +17,8 @@ function App() {
         },
       );
       dispatch(setUser(res.data.body));
-    } catch (error) {
-      dispatch(setAuthChecked());
+    } catch {
+      dispatch(clearUser());
     }
   }, [dispatch]);
 
