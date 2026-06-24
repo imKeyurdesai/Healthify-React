@@ -329,21 +329,69 @@ function Feed() {
     }
   }, []);
 
+  const updateFeedPost = (postId, updater) => {
+    setFeed((prevFeed) =>
+      prevFeed.map((post) => {
+        if (getPostId(post) !== postId) return post;
+        return updater(post);
+      }),
+    );
+  };
+
   const handleLikeToggle = async (post) => {
     const postId = getPostId(post);
     if (!postId) return;
 
+    const previousPost =
+      feed.find((item) => getPostId(item) === postId) || post;
+
+    updateFeedPost(postId, (currentPost) => {
+      const likes = getPostLikes(currentPost);
+      const hasLiked = likes.some((like) => {
+        if (typeof like === "string") return like === currentUserId;
+        const liker =
+          like?.userId ?? like?.user ?? like?.authorId ?? like?.profile;
+        if (!liker) return false;
+        if (typeof liker === "string") return liker === currentUserId;
+        return liker?._id === currentUserId || liker?.id === currentUserId;
+      });
+
+      return {
+        ...currentPost,
+        likes: hasLiked
+          ? likes.filter((like) => {
+              if (typeof like === "string") return like !== currentUserId;
+              const liker =
+                like?.userId ?? like?.user ?? like?.authorId ?? like?.profile;
+              if (!liker) return true;
+              if (typeof liker === "string") return liker !== currentUserId;
+              return (
+                liker?._id !== currentUserId && liker?.id !== currentUserId
+              );
+            })
+          : [...likes, currentUserId],
+      };
+    });
+
     setActionLoadingPostId(postId);
     try {
-      await axios.patch(
+      const res = await axios.patch(
         import.meta.env.VITE_SERVER_URL + `/feed/post/${postId}/like`,
         {},
         {
           withCredentials: true,
         },
       );
-      await fetchFeed();
+
+      const responsePost =
+        res?.data?.body?.post ?? res?.data?.post ?? res?.data?.body ?? null;
+
+      if (responsePost && getPostId(responsePost) === postId) {
+        updateFeedPost(postId, () => responsePost);
+        return;
+      }
     } catch (error) {
+      updateFeedPost(postId, () => previousPost);
       showAlert({
         type: "error",
         title: "unable to update like",
@@ -715,11 +763,12 @@ function Feed() {
                               const canDeleteComment =
                                 commentAuthorId &&
                                 commentAuthorId === currentUserId;
+                              const isPostAuthor = commentAuthorId === post.authorId._id;
 
                               return (
                                 <div
                                   key={commentId}
-                                  className={`rounded-xl border border-slate-200 p-3 ${getCommentAutherRole(comment) === 'doctor' ? 'bg-orange-100' : ''} `}
+                                  className={`rounded-xl border border-slate-200 p-3 ${getCommentAutherRole(comment) === "doctor" ? "bg-orange-100" : ""} `}
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
@@ -728,7 +777,7 @@ function Feed() {
                                           {getCommentAuthorName(comment)}
                                         </p>
                                         <p className="text-xs text-slate-700 px-2">
-                                          {canDeleteComment ? "(author)" : ""}
+                                          {isPostAuthor ? "(author)" : ""}
                                         </p>
                                       </div>
                                       <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">
