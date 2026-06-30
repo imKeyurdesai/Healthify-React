@@ -8,8 +8,11 @@ function UploadImagePopUp({
   handleImgUpload,
 }) {
   const handleImageFileChange = async (e) => {
-    const file = e.target.files?.[0];
-
+    const file = e.target.files?.[0] ?? null;
+    setFormData((prev) => ({
+      ...prev,
+      image: file,
+    }));
     if (!file) {
       return;
     }
@@ -67,12 +70,12 @@ function UploadImagePopUp({
               id="profileImageUrlPopup"
               type="url"
               value={formData.profileUrl}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  profileUrl: e.target.value,
-                }))
-              }
+              // onChange={(e) =>
+              //   setFormData((prev) => ({
+              //     ...prev,
+              //     profileUrl: e.target.value,
+              //   }))
+              // }
               placeholder="https://example.com/photo.jpg"
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
             />

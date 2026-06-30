@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../features/userSlice";
 import { useNavigate } from "react-router-dom";
 import { Alert, UploadImagePopUp } from "../components/index";
-import { supabase } from "../utils/supabase";
 
 function Profile() {
   const dispatch = useDispatch();
@@ -16,7 +15,6 @@ function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   const [alertData, setAlertData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [inputImageWidget, setInputImageWidget] = useState(false);
   const [conformDoctorPopup, setConformDoctorPopup] = useState(false);
   const [passwords, setPasswords] = useState({
     oldPassword: "",
@@ -43,8 +41,7 @@ function Profile() {
   const age = userdata.age || "Not specified";
   const gender = userdata.gender || "Not specified";
   const about = userdata.about?.trim() || "Not specified";
-  const photoUrl =
-    userdata.profileUrl?.trim();
+  const photoUrl = userdata.profileUrl?.trim();
 
   const fullName =
     [userdata.firstName, userdata.lastName].filter(Boolean).join(" ").trim() ||
@@ -96,7 +93,8 @@ function Profile() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImgUpload = async (file) => {
+  const handleImgUpload = async (event) => {
+    const file = event.target.files?.[0] ?? null;
     if (!file) {
       return false;
     }
@@ -104,22 +102,18 @@ function Profile() {
     setLoading(true);
 
     try {
-      const fileExt = file.name?.split(".").pop() || "jpg";
-      const fileName = `${userdata._id || userdata.id || "user"}-${Date.now()}.${fileExt}`;
-      const filePath = `profiles/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
+      const res = await axios.post(
+        import.meta.env.VITE_SERVER_URL + `/profile/upload-image`,
+        { file: file },
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+      const publicUrl = res.data?.body;
+      console.log(publicUrl);
       setFormData((prev) => ({ ...prev, profileUrl: publicUrl }));
       dispatch(
         setUser({
@@ -141,7 +135,6 @@ function Profile() {
         title: "Upload failed",
         message: error?.message || "Failed to upload image.",
       });
-      setInputImageWidget(false);
       return false;
     } finally {
       setLoading(false);
@@ -157,10 +150,6 @@ function Profile() {
 
     if (formData.firstName.trim() !== "") {
       payload.firstName = formData.firstName.trim();
-    }
-
-    if (formData.profileUrl.trim() !== "") {
-      payload.profileUrl = formData.profileUrl.trim();
     }
 
     if (formData.lastName.trim() !== "") {
@@ -641,20 +630,21 @@ function Profile() {
                       name="profileUrl"
                       type="url"
                       value={formData.profileUrl}
-                      onChange={handleChange}
                       placeholder="https://example.com/photo.jpg"
                       className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                     />
                   </div>
 
                   <div>
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                      onClick={() => setInputImageWidget(true)}
-                    >
-                      Upload image
-                    </button>
+                    <label htmlFor="input">Upload Image : </label>
+                    <input
+                      className="inline-flex items-center justify-center rounded-md bg-blue-600 mx-3 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      type="file"
+                      name="image"
+                      id="create-image"
+                      accept="image/*"
+                      onChange={handleImgUpload}
+                    />
                   </div>
 
                   {userRole === "doctor" && (
@@ -780,16 +770,6 @@ function Profile() {
                 </p>
               </div>
             </article>
-          )}
-
-          {inputImageWidget && (
-            <UploadImagePopUp
-              formData={formData}
-              setFormData={setFormData}
-              photoUrl={photoUrl}
-              onClose={() => setInputImageWidget(false)}
-              handleImgUpload={handleImgUpload}
-            />
           )}
         </div>
       </div>
