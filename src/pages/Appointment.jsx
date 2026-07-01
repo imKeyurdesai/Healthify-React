@@ -53,7 +53,7 @@ function Appointment() {
     try {
       await axios.patch(
         import.meta.env.VITE_SERVER_URL +
-          `/user/appointment/cancel/${appointmentId}`,
+          `/appointment/cancel/${appointmentId}`,
         {},
         {
           withCredentials: true,
@@ -118,7 +118,13 @@ function Appointment() {
                     <p className="text-blue-600 font-medium">
                       {doctor?.skills?.join(", ")}
                     </p>
-                    <p className="text-gray-600">{doctor?.location}</p>
+                    <p className="h-4 text-black py-1">
+                      Scheduled Time:{" "}
+                      {appointment?.appointedTime
+                        ? new Date(appointment.appointedTime).toLocaleString()
+                        : "N/A"}
+                    </p>
+                    <p className="text-gray-600 pt-2">{doctor?.location}</p>
                     <p className="text-sm text-gray-500">
                       Languages: {doctor?.languages?.join(", ")}
                     </p>
