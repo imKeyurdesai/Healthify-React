@@ -21,7 +21,6 @@ Healthify is a React + Vite healthcare portal for patients and doctors. It suppo
 - Redux Toolkit
 - Axios
 - Tailwind CSS v4
-- Supabase Storage
 - React Icons
 - React CountUp
 
@@ -43,8 +42,6 @@ npm install
 
 ```bash
 VITE_SERVER_URL=http://localhost:3000
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-or-publishable-key
 ```
 
 3. Start the development server:
@@ -65,8 +62,6 @@ npm run dev
 The app expects the following environment variables:
 
 - `VITE_SERVER_URL` - base URL of the backend API.
-- `VITE_SUPABASE_URL` - Supabase project URL.
-- `VITE_SUPABASE_PUBLISHABLE_KEY` - Supabase publishable key used by the client.
 
 ## Main Routes
 
